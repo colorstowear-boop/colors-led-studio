@@ -50,6 +50,14 @@ jobs:
         shell: bash
         run: node -e "const fs=require('fs');if(fs.existsSync('build/icon.ico.b64'))fs.writeFileSync('build/icon.ico',Buffer.from(fs.readFileSync('build/icon.ico.b64','utf8').trim(),'base64'))"
 
+      - name: Usa le versioni più recenti dei componenti
+        shell: bash
+        run: |
+          npm pkg set "dependencies.electron-updater=^$(npm view electron-updater version)"
+          npm pkg set "devDependencies.electron=^$(npm view electron version)"
+          npm pkg set "devDependencies.electron-builder=^$(npm view electron-builder version)"
+          cat package.json
+
       - name: Installa componenti
         run: npm install
 

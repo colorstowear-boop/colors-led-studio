@@ -1,0 +1,59 @@
+name: Crea installer Windows
+
+on:
+  workflow_dispatch:
+    inputs:
+      tipo:
+        description: 'Che versione vuoi pubblicare?'
+        required: true
+        default: 'correzione (1.0.0 -> 1.0.1)'
+        type: choice
+        options:
+          - 'prima pubblicazione / stessa versione'
+          - 'correzione (1.0.0 -> 1.0.1)'
+          - 'nuove funzioni (1.0.0 -> 1.1.0)'
+          - 'versione grande (1.0.0 -> 2.0.0)'
+
+permissions:
+  contents: write
+
+jobs:
+  installer:
+    runs-on: windows-latest
+    steps:
+      - name: Scarica il progetto
+        uses: actions/checkout@v4
+
+      - name: Prepara Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Aumenta il numero di versione
+        shell: bash
+        run: |
+          case "${{ inputs.tipo }}" in
+            correzione*) npm version patch --no-git-tag-version ;;
+            nuove*)      npm version minor --no-git-tag-version ;;
+            versione*)   npm version major --no-git-tag-version ;;
+            *)           echo "versione invariata" ;;
+          esac
+          V=$(node -p "require('./package.json').version")
+          echo "Versione: $V"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "Versione $V" || echo "niente da salvare"
+          git push || echo "push non necessario"
+
+      - name: Prepara icona
+        shell: bash
+        run: node -e "const fs=require('fs');if(fs.existsSync('build/icon.ico.b64'))fs.writeFileSync('build/icon.ico',Buffer.from(fs.readFileSync('build/icon.ico.b64','utf8').trim(),'base64'))"
+
+      - name: Installa componenti
+        run: npm install
+
+      - name: Crea l'installer e pubblica la Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run release

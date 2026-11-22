@@ -1,0 +1,56 @@
+COLORS LED STUDIO - installazione e aggiornamenti tramite GitHub
+=================================================================
+
+COME FUNZIONA
+  Il codice sta su GitHub. GitHub crea da solo l'installer per Windows
+  (nel cloud, non serve installare niente sul PC) e lo pubblica nella pagina
+  "Releases". Il programma installato controlla GitHub a ogni avvio e, se c'e
+  una versione nuova, chiede "Scarica e aggiorna".
+
+PRIMA VOLTA (10 minuti)
+  1. Crea un account gratuito su https://github.com (se non ce l'hai).
+  2. In alto a destra "+" > "New repository"
+       Nome: colors-led-studio
+       Visibilita: Public   (serve per gli aggiornamenti automatici gratuiti)
+       Crea il repository.
+  3. Nella pagina del repository: "uploading an existing file"
+     (oppure "Add file" > "Upload files") e trascina TUTTO il contenuto
+     di questa cartella, compresa la cartella ".github". Poi "Commit changes".
+  4. Vai su "Actions" (se chiede, clicca "I understand... enable").
+     A sinistra "Crea installer Windows" > "Run workflow" > scegli
+     "prima pubblicazione / stessa versione" > "Run workflow".
+  5. Dopo 5-10 minuti (pallino verde) vai su "Releases" (pagina principale,
+     colonna a destra): scarica ColorsLEDStudio-Setup-1.0.0.exe e installalo.
+     Windows puo dire "Windows ha protetto il PC": "Ulteriori informazioni"
+     > "Esegui comunque" (succede perche l'installer non e firmato).
+
+PUBBLICARE UN AGGIORNAMENTO
+  1. Su GitHub: "Add file" > "Upload files" e carica i file nuovi che ti
+     preparo (di solito solo index.html), poi "Commit changes".
+  2. "Actions" > "Crea installer Windows" > "Run workflow" e scegli:
+       correzione       1.0.0 -> 1.0.1
+       nuove funzioni   1.0.0 -> 1.1.0
+       versione grande  1.0.0 -> 2.0.0
+  3. Fatto: al prossimo avvio tutti i PC con il programma si aggiornano.
+
+NOTA SULLA PRIVACY DEL CODICE
+  Con il repository "Public" il codice del programma e visibile a chiunque.
+  Se un giorno vuoi venderlo, si puo tenere il codice privato e pubblicare
+  solo gli installer in un secondo repository pubblico (te lo preparo io).
+
+PROVA SENZA INSTALLARE
+  - index.html si apre anche da solo con doppio clic (Edge/Chrome).
+  - PROVA_SENZA_INSTALLARE.bat e CREA_INSTALLER_PROVA.bat (richiedono
+    Node.js sul PC) servono solo per prove: l'installer "ufficiale" con gli
+    aggiornamenti e quello creato da GitHub.
+
+COSA FA IL PROGRAMMA
+  - Testo con qualsiasi font o SVG/PNG, lettere separate o scritta unita
+  - Parete, fondo, scalino reggi-faccia, faccia in PLA trasparente
+  - Luce frontale, retro (alone) o fronte+retro, qualsiasi tipo di LED
+  - Passaggio cavi tra lettere vicine (tacca lato muro)
+  - Fissaggio a muro: asole a goccia o viti passanti, distanziali dal muro
+  - Dima di foratura 1:1 (SVG/DXF) da stampare o tagliare al laser
+  - Divisione automatica dei pezzi piu grandi del piatto con code di rondine
+  - Vista 3D: fronte, retro, accesa con colore luce, muro, alone, esploso
+  - Esporta 3MF (tutti i pezzi), STL, SVG/DXF

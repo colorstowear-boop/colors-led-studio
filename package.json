@@ -1,0 +1,20 @@
+{
+  "name": "colors-led-studio",
+  "productName": "Colors LED Studio",
+  "version": "1.0.0",
+  "description": "Generatore di insegne e scritte LED stampate in 3D - Colors to Wear",
+  "author": "Colors to Wear",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --config electron-builder.config.js --win --publish never",
+    "release": "electron-builder --config electron-builder.config.js --win --publish always"
+  },
+  "dependencies": {
+    "electron-updater": "latest"
+  },
+  "devDependencies": {
+    "electron": "latest",
+    "electron-builder": "latest"
+  }
+}

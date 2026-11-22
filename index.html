@@ -1,0 +1,2512 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Colors LED Studio</title>
+<style>
+:root{--bg:#0b1622;--panel:#111f2e;--panel2:#16283a;--line:#24384d;--txt:#d7e3ee;--mut:#7d93a8;--acc:#ff9b2f;--acc2:#36c2ff;--ok:#3ddc84;--bad:#ff5a5a;--warn:#ffcc33}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:13px/1.35 "Segoe UI",system-ui,sans-serif;overflow:hidden}
+button,select,input,textarea{font:inherit;color:var(--txt)}
+#top{height:44px;display:flex;align-items:center;gap:8px;padding:0 10px;background:#0a121b;border-bottom:1px solid var(--line)}
+#top .logo{font-weight:700;letter-spacing:.5px;margin-right:12px;white-space:nowrap}
+#top .logo b{color:var(--acc)}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--acc2)}
+.btn.pri{background:var(--acc);color:#1a0f00;border-color:var(--acc);font-weight:600}
+.sp{flex:1}
+#main{position:absolute;top:44px;bottom:24px;left:0;right:0;display:flex}
+#side{width:310px;min-width:310px;overflow-y:auto;background:var(--panel);border-right:1px solid var(--line)}
+#info{width:270px;min-width:270px;overflow-y:auto;background:var(--panel);border-left:1px solid var(--line);padding:8px}
+#view{flex:1;position:relative;min-width:0}
+#tabs{position:absolute;top:0;left:0;right:0;height:34px;display:flex;gap:2px;padding:4px 6px 0;background:#0a121b;border-bottom:1px solid var(--line);z-index:2}
+#tabs .tab{padding:6px 14px;border-radius:6px 6px 0 0;cursor:pointer;color:var(--mut);border:1px solid transparent;border-bottom:none}
+#tabs .tab.on{background:var(--bg);color:var(--txt);border-color:var(--line)}
+#tabs .tools{margin-left:auto;display:flex;gap:4px;align-items:center}
+#tabs .tools .btn{padding:3px 8px;font-size:12px}
+#tabs .tools .btn.on{border-color:var(--acc);color:var(--acc)}
+canvas.vc{position:absolute;top:34px;left:0;width:100%;height:calc(100% - 34px);display:none;touch-action:none}
+canvas.vc.on{display:block}
+#busy{position:absolute;top:44px;right:12px;background:var(--acc);color:#000;padding:3px 10px;border-radius:12px;font-weight:600;display:none;z-index:3}
+#status{position:absolute;bottom:0;left:0;right:0;height:24px;background:#0a121b;border-top:1px solid var(--line);display:flex;gap:18px;align-items:center;padding:0 10px;color:var(--mut);font-size:12px}
+details{border-bottom:1px solid var(--line)}
+summary{padding:9px 12px;cursor:pointer;font-weight:600;background:var(--panel2);list-style:none;user-select:none}
+summary::before{content:"▸ ";color:var(--acc)}
+details[open] summary::before{content:"▾ "}
+.sec{padding:8px 12px 12px}
+.row{display:flex;align-items:center;gap:6px;margin:5px 0}
+.row label{flex:1;color:var(--mut)}
+.row input[type=number]{width:76px;background:#0b1622;border:1px solid var(--line);border-radius:4px;padding:3px 5px;text-align:right}
+.row select{background:#0b1622;border:1px solid var(--line);border-radius:4px;padding:3px;max-width:170px}
+.row .u{color:var(--mut);width:22px;font-size:11px}
+textarea{width:100%;height:58px;background:#0b1622;border:1px solid var(--line);border-radius:4px;padding:6px;resize:vertical;font-size:16px}
+.seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:6px 0}
+.seg button{flex:1;background:#0b1622;border:none;padding:6px 4px;cursor:pointer;color:var(--mut);font-size:12px}
+.seg button.on{background:var(--acc2);color:#00151f;font-weight:600}
+.styles{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0}
+.styles button{background:#0b1622;border:1px solid var(--line);border-radius:8px;padding:6px 4px;cursor:pointer;color:var(--mut);font-size:11.5px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.styles button svg{width:64px;height:30px}.styles button svg rect{fill:#2a3a4a}.styles button svg rect.l{fill:#9fd8ff}
+.styles button.on{border-color:var(--acc2);color:var(--txt);background:#10283a}.styles button.on svg rect.l{fill:#ffd27a}
+.hint{color:var(--mut);font-size:11px;margin:4px 0}
+.hidden{display:none!important}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:7px 9px;margin-bottom:7px}
+.card h4{margin:0 0 4px;font-size:13px;display:flex;justify-content:space-between}
+.kv{display:flex;justify-content:space-between;color:var(--mut);font-size:12px}
+.kv b{color:var(--txt);font-weight:500}
+.w{color:var(--warn);font-size:12px;margin-top:3px}
+.e{color:var(--bad);font-size:12px;margin-top:3px}
+.good{color:var(--ok);font-size:12px;margin-top:3px}
+#menuExp{position:absolute;top:40px;right:10px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px;z-index:10;display:none;min-width:250px}
+#menuExp .btn{display:block;width:100%;text-align:left;margin:3px 0}
+.legend{position:absolute;left:10px;bottom:10px;background:rgba(10,18,27,.85);border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:11px;z-index:2;pointer-events:none}
+.legend i{display:inline-block;width:14px;height:3px;margin-right:6px;vertical-align:middle}
+@media (max-width:900px){#info{display:none}#side{width:260px;min-width:260px}}
+</style>
+</head>
+<body>
+<div id="top">
+  <div class="logo">Colors <b>LED</b> Studio</div>
+  <button class="btn" id="bNew">Nuovo</button>
+  <button class="btn" id="bOpen">Apri progetto</button>
+  <button class="btn" id="bSave">Salva progetto</button>
+  <div class="sp"></div>
+  <button class="btn hidden" id="bUpd" title="Controlla se c'è una versione nuova">Aggiornamenti</button>
+  <button class="btn pri" id="bExp">Esporta ▾</button>
+  <input type="file" id="fProj" accept=".json,.cled" class="hidden">
+</div>
+<div id="menuExp">
+  <button class="btn" data-exp="3mf">3MF per Bambu/Anycubic (tutti i pezzi)</button>
+  <button class="btn" data-exp="stlzip">STL – un file per pezzo (ZIP)</button>
+  <button class="btn" data-exp="stlhousing">STL – solo scocche (unico file)</button>
+  <button class="btn" data-exp="stlface">STL – solo facce/pannelli (unico file)</button>
+  <button class="btn" data-exp="svg">SVG contorni (per laser)</button>
+  <button class="btn" data-exp="dxf">DXF contorni (per laser)</button>
+  <button class="btn" data-exp="dima">Dima di foratura muro 1:1 (SVG)</button>
+  <button class="btn" data-exp="dimadxf">Dima di foratura muro 1:1 (DXF)</button>
+</div>
+<div id="main">
+  <div id="side">
+    <details open><summary>1 · Sorgente</summary><div class="sec">
+      <div class="seg" id="segSrc"><button data-v="text">Testo</button><button data-v="image">SVG / Immagine</button></div>
+      <div id="srcText">
+        <textarea id="p_text" spellcheck="false"></textarea>
+        <div class="hint">Vai a capo per più righe.</div>
+        <div class="row"><label>Font</label><select id="p_font"></select></div>
+        <div class="row" style="gap:4px"><button class="btn" id="bFontFile" style="flex:1">Carica .ttf/.otf</button><button class="btn" id="bFontSys" style="flex:1">Font installati</button></div>
+        <input type="file" id="fFont" accept=".ttf,.otf,.woff,.woff2" class="hidden">
+        <div class="row"><label><input type="checkbox" id="p_bold"> Grassetto</label><label><input type="checkbox" id="p_italic"> Corsivo</label></div>
+        <div class="row"><label>Altezza maiuscole (H)</label><input type="number" id="p_capH" step="1" min="5"><span class="u">mm</span></div>
+        <div class="row"><label>Spaziatura lettere</label><input type="number" id="p_letterSp" step="0.5"><span class="u">mm</span></div>
+        <div class="row"><label>Interlinea</label><input type="number" id="p_lineH" step="1"><span class="u">mm</span></div>
+        <div class="row"><label>Allineamento</label><select id="p_align"><option value="left">Sinistra</option><option value="center">Centro</option><option value="right">Destra</option></select></div>
+      </div>
+      <div id="srcImg" class="hidden">
+        <button class="btn" id="bImg" style="width:100%">Importa SVG / PNG / JPG…</button>
+        <input type="file" id="fImg" accept=".svg,.png,.jpg,.jpeg,.webp" class="hidden">
+        <div class="hint" id="imgName">Nessun file. Va bene un logo esportato da Illustrator.</div>
+        <div class="row"><label>Altezza del disegno</label><input type="number" id="p_imgH" step="1" min="5"><span class="u">mm</span></div>
+        <div class="row"><label><input type="checkbox" id="p_ignoreWhite"> Ignora bianco/sfondo</label></div>
+        <div class="row"><label><input type="checkbox" id="p_invert"> Inverti (chiaro = pieno)</label></div>
+      </div>
+    </div></details>
+
+    <details open><summary>2 · Composizione</summary><div class="sec">
+      <div class="styles" id="segMode">
+        <button data-v="separate"><svg viewBox="0 0 64 30"><rect x="4" y="6" width="14" height="18" rx="2"/><rect x="25" y="6" width="14" height="18" rx="2"/><rect x="46" y="6" width="14" height="18" rx="2"/></svg>Lettere separate</button>
+        <button data-v="merge"><svg viewBox="0 0 64 30"><rect x="3" y="4" width="58" height="22" rx="10"/><rect x="9" y="9" width="12" height="12" rx="2" class="l"/><rect x="26" y="9" width="12" height="12" rx="2" class="l"/><rect x="43" y="9" width="12" height="12" rx="2" class="l"/></svg>Unita, bordo unico</button>
+        <button data-v="overlap"><svg viewBox="0 0 64 30"><rect x="3" y="5" width="22" height="21" rx="5"/><rect x="20" y="3" width="22" height="21" rx="5"/><rect x="38" y="6" width="22" height="21" rx="5"/><rect x="7" y="9" width="14" height="13" rx="2" class="l"/><rect x="24" y="7" width="14" height="13" rx="2" class="l"/><rect x="42" y="10" width="14" height="13" rx="2" class="l"/></svg>Unita, bordo per lettera</button>
+        <button data-v="block"><svg viewBox="0 0 64 30"><rect x="3" y="7" width="18" height="20" rx="2"/><rect x="23" y="3" width="18" height="24" rx="2"/><rect x="43" y="9" width="18" height="18" rx="2"/><rect x="8" y="11" width="8" height="12" class="l"/><rect x="28" y="8" width="8" height="15" class="l"/><rect x="48" y="13" width="8" height="10" class="l"/></svg>Lettere su blocchi</button>
+      </div>
+      <div class="row" id="rowFuse"><label>Fusione tra lettere</label><input type="number" id="p_fuse" step="0.5" min="0"><span class="u">mm</span></div>
+      <div id="overlapOpts">
+        <div class="row"><label>Lettere sovrapposte di</label><input type="number" id="p_overlapAmt" step="0.5" min="0"><span class="u">mm</span></div>
+        <div class="row"><label>Ordine</label><select id="p_overlapOrder"><option value="next">Ogni lettera sopra la precedente</option><option value="prev">Ogni lettera sotto la precedente</option></select></div>
+        <div class="hint">Ogni lettera ha la sua cornice e il suo vano luce; le lettere si toccano e diventano un pezzo unico. Per unirle bene metti un “Bordo esterno” di 3–6 mm.</div>
+      </div>
+      <div id="blockOpts">
+        <div class="row"><label>Margine blocco</label><input type="number" id="p_blockMargin" step="0.5" min="2"><span class="u">mm</span></div>
+        <div class="row"><label>Raggio angoli</label><input type="number" id="p_blockRadius" step="0.5" min="0"><span class="u">mm</span></div>
+        <div class="row"><label>Spessore frontale blocco</label><input type="number" id="p_plateT" step="0.2" min="0.8"><span class="u">mm</span></div>
+        <div class="row"><label>Sporgenza lettera</label><input type="number" id="p_plugP" step="1" min="0"><span class="u">mm</span></div>
+        <div class="row"><label><input type="checkbox" id="p_blockJoin"> Un unico pannello per tutta la scritta</label></div>
+        <div class="hint">La lettera in PLA trasparente esce dal blocco scuro; dentro ha una flangia che la trattiene. Il blocco si stampa a faccia in giù, il coperchio dietro tiene LED e fissaggi.</div>
+      </div>
+      <div class="row"><label><input type="checkbox" id="p_flatBase"> Base piatta (sta in piedi su mensola)</label></div>
+      <div class="row" id="rowBaseCut"><label>Taglio base</label><input type="number" id="p_baseCut" step="0.5" min="0"><span class="u">mm</span></div>
+      <div class="row"><label>Bordo esterno (offset)</label><input type="number" id="p_outline" step="0.5"><span class="u">mm</span></div>
+      <div class="row"><label><input type="checkbox" id="p_fillHoles"> Riempi interni (O, A, B…)</label></div>
+      <div class="hint">Stile canale</div>
+      <div class="seg" id="segStyle"><button data-v="classic">Lettera piena</button><button data-v="neon">Neon (contorno)</button></div>
+      <div id="neonOpts" class="hidden">
+        <div class="row"><label>Larghezza canale neon</label><input type="number" id="p_neonW" step="0.5" min="2"><span class="u">mm</span></div>
+        <div class="row"><label>Posizione dal bordo lettera</label><input type="number" id="p_neonOffset" step="0.5"><span class="u">mm</span></div>
+        <div class="hint">Canale che segue il contorno della lettera (per neon flex o strisce sottili). Valore negativo = più all'interno.</div>
+      </div>
+    </div></details>
+
+    <details open><summary>3 · Struttura (misure)</summary><div class="sec">
+      <div class="row"><label>Profondità totale</label><input type="number" id="p_H" step="1" min="5"><span class="u">mm</span></div>
+      <div class="row"><label>Spessore parete</label><input type="number" id="p_w" step="0.1" min="0.4"><span class="u">mm</span></div>
+      <div class="row"><label>Spessore fondo</label><input type="number" id="p_B" step="0.1" min="0.6"><span class="u">mm</span></div>
+      <div class="row"><label><input type="checkbox" id="p_step"> Scalino reggi-faccia</label></div>
+      <div id="stepOpts">
+        <div class="row"><label>Larghezza scalino</label><input type="number" id="p_s" step="0.1" min="0.4"><span class="u">mm</span></div>
+        <div class="row"><label>Profondità scalino dal bordo</label><input type="number" id="p_L" step="0.1" min="0.4"><span class="u">mm</span></div>
+      </div>
+      <div class="row"><label>Spessore faccia (PLA trasp.)</label><input type="number" id="p_F" step="0.1" min="0.4"><span class="u">mm</span></div>
+      <div class="row" id="rowGap"><label>Gioco faccia/parete</label><input type="number" id="p_gap" step="0.05" min="0"><span class="u">mm</span></div>
+      <div class="hint" id="stepHint"></div>
+    </div></details>
+
+    <details open><summary>4 · Illuminazione</summary><div class="sec">
+      <div class="seg" id="segLight"><button data-v="front">Frontale</button><button data-v="back">Retro (alone)</button><button data-v="both">Fronte+retro</button></div>
+      <div class="hint" id="lightHint"></div>
+      <div class="row"><label>Tipo LED</label><select id="p_led">
+        <option value="strip5">Striscia 5 mm</option>
+        <option value="strip8">Striscia 8 mm</option>
+        <option value="strip10">Striscia 10 mm</option>
+        <option value="strip12">Striscia 12 mm</option>
+        <option value="cob8">Striscia COB 8 mm</option>
+        <option value="cob10">Striscia COB 10 mm</option>
+        <option value="pixel10">Pixel WS2812 10 mm</option>
+        <option value="pixel12">Pixel WS2812 12 mm</option>
+        <option value="neon6">Neon flex 6 mm</option>
+        <option value="neon8">Neon flex 8 mm</option>
+        <option value="neon12">Neon flex 12 mm</option>
+        <option value="module">Moduli LED 15 mm</option>
+        <option value="custom">Personalizzato</option>
+      </select></div>
+      <div class="row"><label>Larghezza LED</label><input type="number" id="p_ledW" step="0.5" min="1"><span class="u">mm</span></div>
+    </div></details>
+
+    <details><summary>5 · Fori, cavi e fissaggio</summary><div class="sec">
+      <div class="row"><label><input type="checkbox" id="p_holesAuto"> Posizione automatica</label></div>
+      <div class="row"><label>Ø foro cavo</label><input type="number" id="p_holeD" step="0.5" min="0"><span class="u">mm</span></div>
+      <div class="row"><label><input type="checkbox" id="p_cableNotch"> Passaggio cavi tra lettere</label></div>
+      <div class="row"><label>Larghezza passaggio</label><input type="number" id="p_notchW" step="0.5" min="3"><span class="u">mm</span></div>
+      <div class="row"><label>Altezza passaggio</label><input type="number" id="p_notchH" step="0.5" min="3"><span class="u">mm</span></div>
+      <div class="hint">Tacca nella parete verso la lettera vicina, dal lato muro: il cavo passa da una lettera all'altra senza vedersi.</div>
+      <div class="hint" style="margin-top:10px;color:var(--txt)">Fissaggio a muro</div>
+      <div class="row"><label>Sistema</label><select id="p_mount">
+        <option value="keyhole">Asole a goccia (appendi alle viti)</option>
+        <option value="screws">Viti passanti</option>
+        <option value="none">Nessuno</option>
+      </select></div>
+      <div class="row"><label>Ø vite (gambo)</label><input type="number" id="p_fixD" step="0.5" min="1"><span class="u">mm</span></div>
+      <div class="row" id="rowHead"><label>Ø testa vite</label><input type="number" id="p_headD" step="0.5" min="3"><span class="u">mm</span></div>
+      <div id="standOpts">
+        <div class="row"><label><input type="checkbox" id="p_standoffs"> Distanziali dal muro</label></div>
+        <div class="row"><label>Distanza dal muro</label><input type="number" id="p_postL" step="1" min="3"><span class="u">mm</span></div>
+        <div class="row"><label>Ø esterno distanziale</label><input type="number" id="p_postD" step="0.5" min="4"><span class="u">mm</span></div>
+      </div>
+      <div class="hint" id="mountHint"></div>
+      <button class="btn" id="bDima" style="width:100%;margin-top:6px">Esporta dima di foratura 1:1</button>
+      <div class="hint">Manuale: in Pianta usa lo strumento “+ Foro” e clicca dove vuoi il foro; tasto destro (o “− Foro”) per toglierlo.</div>
+      <button class="btn" id="bClearHoles" style="width:100%;margin-top:4px">Cancella fori manuali</button>
+    </div></details>
+
+    <details><summary>6 · Stampante e precisione</summary><div class="sec">
+      <div class="row"><label>Piatto</label><select id="p_bed">
+        <option value="a1">Bambu Lab A1 (256×256)</option>
+        <option value="a1mini">Bambu Lab A1 mini (180×180)</option>
+        <option value="custom">Personalizzato</option>
+      </select></div>
+      <div class="row"><label>Piatto X</label><input type="number" id="p_bedX" step="1"><span class="u">mm</span></div>
+      <div class="row"><label>Piatto Y</label><input type="number" id="p_bedY" step="1"><span class="u">mm</span></div>
+      <div class="row"><label><input type="checkbox" id="p_autoSplit"> Dividi automaticamente i pezzi grandi</label></div>
+      <div class="row"><label>Gioco incastro</label><input type="number" id="p_kerf" step="0.05" min="0"><span class="u">mm</span></div>
+      <div class="hint">Se un pezzo non entra nel piatto viene tagliato in parti con incastri a coda di rondine (da incollare).</div>
+      <div class="row"><label>Precisione calcolo</label><select id="p_res">
+        <option value="0.1">0,1 mm (lento)</option><option value="0.15">0,15 mm</option><option value="0.2">0,2 mm</option><option value="0.25">0,25 mm</option><option value="0.35">0,35 mm</option><option value="0.5">0,5 mm (bozza)</option>
+      </select></div>
+      <div class="row"><label><input type="checkbox" id="p_auto"> Ricalcola in automatico</label><button class="btn" id="bCalc">Ricalcola</button></div>
+    </div></details>
+  </div>
+
+  <div id="view">
+    <div id="tabs">
+      <div class="tab on" data-t="plan">Pianta 2D</div>
+      <div class="tab" data-t="sect">Sezione</div>
+      <div class="tab" data-t="3d">3D</div>
+      <div class="tools" id="tools2d">
+        <button class="btn" id="tAdd">+ Foro</button>
+        <button class="btn" id="tDel">− Foro</button>
+        <button class="btn" id="tFit">Adatta</button>
+      </div>
+      <div class="tools hidden" id="tools3d">
+        <button class="btn" id="vFront" title="Come la vede il cliente">Fronte</button>
+        <button class="btn" id="vBack" title="Retro: fori, asole, passaggi cavi">Retro</button>
+        <button class="btn" id="vIso">3D</button>
+        <button class="btn" id="tLit" title="Simula la luce accesa">💡 Accesa</button>
+        <select id="litCol" title="Colore luce" style="background:#0b1622;border:1px solid var(--line);border-radius:4px;padding:2px">
+          <option value="1,0.86,0.62">Bianco caldo</option><option value="1,0.97,0.9">Bianco neutro</option><option value="0.85,0.93,1">Bianco freddo</option>
+          <option value="1,0.15,0.1">Rosso</option><option value="0.15,1,0.3">Verde</option><option value="0.2,0.45,1">Blu</option>
+          <option value="1,0.2,0.85">Rosa</option><option value="1,0.55,0.05">Arancio</option><option value="1,0.9,0.1">Giallo</option><option value="0.1,0.95,1">Azzurro</option>
+        </select>
+        <button class="btn" id="tWall" title="Mostra il muro">Muro</button>
+        <button class="btn" id="tExplode">Esploso</button>
+        <button class="btn on" id="tFace">Faccia</button>
+        <button class="btn" id="tFit3">Adatta</button>
+      </div>
+    </div>
+    <canvas class="vc on" id="cPlan"></canvas>
+    <canvas class="vc" id="cSect"></canvas>
+    <canvas class="vc" id="c3d"></canvas>
+    <div class="legend" id="legPlan">
+      <div><i style="background:#ffffff"></i>Contorno esterno</div>
+      <div><i style="background:#36c2ff"></i>Interno parete</div>
+      <div><i style="background:#ffcc33"></i>Bordo scalino</div>
+      <div><i style="background:#3ddc84"></i>Faccia / pannello</div>
+      <div><i style="background:#ff5a5a"></i>Fori e passaggi cavo</div>
+      <div><i style="background:#e05cff"></i>Taglio con incastri</div>
+    </div>
+  </div>
+
+  <div id="info"><div id="infoBody"></div></div>
+</div>
+<div id="busy">Calcolo…</div>
+<div id="status"><span id="stXY">X — Y —</span><span id="stMsg">Pronto</span><span class="sp"></span><span id="stTime"></span><span id="stVer"></span></div>
+
+<script>
+"use strict";
+/* =====================================================================
+   PARAMETRI
+   ===================================================================== */
+const DEFAULTS = {
+  src:'text', text:'COLORS', font:'Arial Black', bold:false, italic:false, capH:100, letterSp:3, lineH:140, align:'center',
+  imgH:100, ignoreWhite:true, invert:false,
+  mode:'separate', fuse:4, outline:0, fillHoles:false, style:'classic', neonW:9, neonOffset:-6,
+  H:30, w:2, B:2, step:true, s:2, L:2, F:2, gap:0.2,
+  light:'front', led:'strip10', ledW:10,
+  holesAuto:true, holeD:6, fixHoles:false, fixD:4, mount:'keyhole', headD:9,
+  bed:'a1', bedX:256, bedY:256, res:'0.25', auto:true,
+  overlapOrder:'next', overlapAmt:5, flatBase:false, baseCut:2, blockMargin:8, blockRadius:6, plateT:2, plugP:10, blockJoin:false,
+  cableNotch:true, notchW:8, notchH:8, standoffs:false, postL:25, postD:12, autoSplit:true, kerf:0.15
+};
+const LEDW = {strip5:5,strip8:8,strip10:10,strip12:12,cob8:8,cob10:10,pixel10:10,pixel12:12,neon6:6,neon8:8,neon12:12,module:15};
+const BEDS = {a1:[256,256], a1mini:[180,180]};
+const WIN_FONTS = ['Arial','Arial Black','Bahnschrift','Calibri','Cambria','Candara','Comic Sans MS','Consolas','Constantia','Corbel','Courier New','Franklin Gothic Medium','Gabriola','Georgia','Impact','Ink Free','Lucida Console','Palatino Linotype','Segoe Print','Segoe Script','Segoe UI','Segoe UI Black','Sitka Text','Tahoma','Times New Roman','Trebuchet MS','Verdana'];
+let P = Object.assign({}, DEFAULTS);
+let manualHoles = [];        // {x,y,d,kind}
+let customFonts = [];        // {name, b64}
+let sysFonts = [];
+let imgData = null, imgName = '';
+let imgEl = null;
+try { const s = JSON.parse(localStorage.getItem('cled_params')||'null'); if (s) { Object.assign(P, s.P||{}); manualHoles = s.holes||[]; } } catch(e) {}
+
+/* =====================================================================
+   GEOMETRIA: distanze, contorni, triangolazione
+   ===================================================================== */
+const INF = 1e20;
+function edt1d(f, n, d, v, z) {
+  let k = 0; v[0] = 0; z[0] = -INF; z[1] = INF;
+  for (let q = 1; q < n; q++) {
+    let s = ((f[q] + q*q) - (f[v[k]] + v[k]*v[k])) / (2*q - 2*v[k]);
+    while (s <= z[k]) { k--; s = ((f[q] + q*q) - (f[v[k]] + v[k]*v[k])) / (2*q - 2*v[k]); }
+    k++; v[k] = q; z[k] = s; z[k+1] = INF;
+  }
+  k = 0;
+  for (let q = 0; q < n; q++) { while (z[k+1] < q) k++; d[q] = (q - v[k])*(q - v[k]) + f[v[k]]; }
+}
+// distanza (in pixel) di ogni cella dalla cella "target" più vicina
+function edt2d(target, W, H) {
+  const g = new Float64Array(W*H);
+  for (let i = 0; i < W*H; i++) g[i] = target[i] ? 0 : INF;
+  const n = Math.max(W, H), f = new Float64Array(n), d = new Float64Array(n), v = new Int32Array(n), z = new Float64Array(n+1);
+  for (let x = 0; x < W; x++) {
+    for (let y = 0; y < H; y++) f[y] = g[y*W + x];
+    edt1d(f, H, d, v, z);
+    for (let y = 0; y < H; y++) g[y*W + x] = d[y];
+  }
+  for (let y = 0; y < H; y++) {
+    const o = y*W;
+    for (let x = 0; x < W; x++) f[x] = g[o + x];
+    edt1d(f, W, d, v, z);
+    for (let x = 0; x < W; x++) g[o + x] = Math.sqrt(d[x]);
+  }
+  return g;
+}
+// campo distanza con segno in mm: negativo dentro
+function sdf(mask, W, H, res) {
+  const inv = new Uint8Array(W*H);
+  for (let i = 0; i < W*H; i++) inv[i] = mask[i] ? 0 : 1;
+  const dOut = edt2d(mask, W, H), dIn = edt2d(inv, W, H);
+  const f = new Float32Array(W*H);
+  for (let i = 0; i < W*H; i++) f[i] = (mask[i] ? -(dIn[i] - 0.5) : (dOut[i] - 0.5)) * res;
+  return f;
+}
+function blur3(f, W, H) {
+  const t = new Float32Array(W*H), o = new Float32Array(W*H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y*W + x;
+    t[i] = (x > 0 && x < W-1) ? (f[i-1] + f[i] + f[i+1]) / 3 : f[i];
+  }
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y*W + x;
+    o[i] = (y > 0 && y < H-1) ? (t[i-W] + t[i] + t[i+W]) / 3 : t[i];
+  }
+  return o;
+}
+function fillHolesMask(mask, W, H) {
+  const out = new Uint8Array(W*H); // 1 = esterno raggiungibile
+  const st = new Int32Array(W*H); let sp = 0;
+  const push = (i) => { if (!mask[i] && !out[i]) { out[i] = 1; st[sp++] = i; } };
+  for (let x = 0; x < W; x++) { push(x); push((H-1)*W + x); }
+  for (let y = 0; y < H; y++) { push(y*W); push(y*W + W-1); }
+  while (sp) {
+    const i = st[--sp], x = i % W, y = (i / W) | 0;
+    if (x > 0) push(i-1); if (x < W-1) push(i+1); if (y > 0) push(i-W); if (y < H-1) push(i+W);
+  }
+  const m = new Uint8Array(W*H);
+  for (let i = 0; i < W*H; i++) m[i] = out[i] ? 0 : 1;
+  return m;
+}
+
+// Marching squares orientato: regione (f - t <= 0) a sinistra, coordinate mondo
+function contourLoops(f, W, H, t, ox, oy, res, tol) {
+  const val = (i) => { let v = f[i] - t; if (v > -1e-6 && v < 1e-6) v = 1e-6; return v; };
+  const nxt = new Map(), pts = new Map();
+  const keyH = (i, j) => { const k = 2*(j*W + i); if (!pts.has(k)) { const a = val(j*W+i), b = val(j*W+i+1); pts.set(k, [i + a/(a-b), j]); } return k; };
+  const keyV = (i, j) => { const k = 2*(j*W + i) + 1; if (!pts.has(k)) { const a = val(j*W+i), b = val((j+1)*W+i); pts.set(k, [i, j + a/(a-b)]); } return k; };
+  const ins = [0,0,0,0], ev = [];
+  for (let j = 0; j < H-1; j++) {
+    const r0 = j*W, r1 = r0 + W;
+    for (let i = 0; i < W-1; i++) {
+      const a = f[r0+i] - t <= 1e-6 ? 1 : 0;
+      const b = f[r0+i+1] - t <= 1e-6 ? 1 : 0;
+      const c = f[r1+i+1] - t <= 1e-6 ? 1 : 0;
+      const d = f[r1+i] - t <= 1e-6 ? 1 : 0;
+      // coerente con val(): inside se v<=0 dopo perturbazione (v in (-1e-6,1e-6) -> +1e-6 = fuori)
+      ins[0] = f[r0+i] - t <= -1e-6 ? 1 : 0; ins[1] = f[r0+i+1] - t <= -1e-6 ? 1 : 0;
+      ins[2] = f[r1+i+1] - t <= -1e-6 ? 1 : 0; ins[3] = f[r1+i] - t <= -1e-6 ? 1 : 0;
+      const code = ins[0] | ins[1] << 1 | ins[2] << 2 | ins[3] << 3;
+      if (code === 0 || code === 15) continue;
+      ev.length = 0;
+      for (let k = 0; k < 4; k++) {
+        const fr = ins[k], to = ins[(k+1) & 3];
+        if (fr !== to) ev.push(k, fr ? 1 : 0); // 1 = uscita
+      }
+      const n = ev.length / 2;
+      for (let e = 0; e < n; e++) {
+        if (ev[2*e+1] !== 1) continue;
+        const ke = ev[2*e], kn = ev[2*((e+1) % n)];
+        const edgeKey = (k) => k === 0 ? keyH(i, j) : k === 1 ? keyV(i+1, j) : k === 2 ? keyH(i, j+1) : keyV(i, j);
+        nxt.set(edgeKey(ke), edgeKey(kn));
+      }
+    }
+  }
+  const seen = new Set(), loops = [];
+  for (const k0 of nxt.keys()) {
+    if (seen.has(k0)) continue;
+    const arr = [];
+    let k = k0;
+    while (k !== undefined && !seen.has(k)) {
+      seen.add(k);
+      const p = pts.get(k);
+      arr.push(ox + p[0]*res, oy - p[1]*res);
+      k = nxt.get(k);
+    }
+    if (arr.length < 6) continue;
+    // inverti (riflessione asse y) -> regione a sinistra
+    const rv = new Float64Array(arr.length);
+    const n = arr.length / 2;
+    for (let q = 0; q < n; q++) { rv[2*q] = arr[2*(n-1-q)]; rv[2*q+1] = arr[2*(n-1-q)+1]; }
+    const s = cleanLoop(simplifyClosed(rv, tol));
+    if (s.length < 6) continue;
+    const A = polyArea(s);
+    if (Math.abs(A) < Math.max(0.02, res*res*0.6)) continue;
+    loops.push({pts: s, area: A, rings: new Map()});
+  }
+  return loops;
+}
+function polyArea(p) {
+  let s = 0; const n = p.length / 2;
+  for (let i = 0, j = n-1; i < n; j = i++) s += p[2*j]*p[2*i+1] - p[2*i]*p[2*j+1];
+  return s / 2;
+}
+function polyLen(p) {
+  let s = 0; const n = p.length / 2;
+  for (let i = 0, j = n-1; i < n; j = i++) s += Math.hypot(p[2*i]-p[2*j], p[2*i+1]-p[2*j+1]);
+  return s;
+}
+function pointInPoly(x, y, p) {
+  let c = false; const n = p.length / 2;
+  for (let i = 0, j = n-1; i < n; j = i++) {
+    const xi = p[2*i], yi = p[2*i+1], xj = p[2*j], yj = p[2*j+1];
+    if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) c = !c;
+  }
+  return c;
+}
+// toglie punti doppi e allineati (altrimenti la triangolazione li salta e la mesh resta aperta)
+function cleanLoop(p) {
+  let a = Array.from(p), changed = true;
+  while (changed && a.length >= 6) {
+    changed = false;
+    const n = a.length / 2, keep = [];
+    for (let i = 0; i < n; i++) {
+      const pi = (i - 1 + n) % n, ni = (i + 1) % n;
+      const ax = a[2*pi], ay = a[2*pi+1], bx = a[2*i], by = a[2*i+1], cx = a[2*ni], cy = a[2*ni+1];
+      const dup = Math.abs(bx - cx) < 1e-7 && Math.abs(by - cy) < 1e-7;
+      const cr = (bx - ax)*(cy - by) - (by - ay)*(cx - bx);
+      if (dup || Math.abs(cr) < 1e-9) { changed = true; for (let j = i + 1; j < n; j++) keep.push(a[2*j], a[2*j+1]); a = keep; break; }
+      keep.push(bx, by);
+    }
+  }
+  return new Float64Array(a);
+}
+function simplifyClosed(p, tol) {
+  const n = p.length / 2;
+  if (n < 8) return p;
+  let far = 0, fd = -1;
+  for (let i = 1; i < n; i++) { const d = (p[2*i]-p[0])**2 + (p[2*i+1]-p[1])**2; if (d > fd) { fd = d; far = i; } }
+  const keep = new Uint8Array(n); keep[0] = 1; keep[far] = 1;
+  const stack = [[0, far], [far, n]];
+  const t2 = tol*tol;
+  while (stack.length) {
+    const [s, e] = stack.pop();
+    if (e - s < 2) continue;
+    const ax = p[2*s], ay = p[2*s+1], bx = p[2*(e % n)], by = p[2*(e % n)+1];
+    const dx = bx - ax, dy = by - ay, L2 = dx*dx + dy*dy;
+    let md = -1, mi = -1;
+    for (let i = s+1; i < e; i++) {
+      const px = p[2*i] - ax, py = p[2*i+1] - ay;
+      let d2;
+      if (L2 < 1e-12) d2 = px*px + py*py;
+      else { const c = px*dy - py*dx; d2 = c*c / L2; }
+      if (d2 > md) { md = d2; mi = i; }
+    }
+    if (md > t2) { keep[mi] = 1; stack.push([s, mi], [mi, e]); }
+  }
+  const out = [];
+  for (let i = 0; i < n; i++) if (keep[i]) out.push(p[2*i], p[2*i+1]);
+  return new Float64Array(out);
+}
+
+/* ---- earcut (algoritmo di Mapbox, versione compatta) ---- */
+function earcut(data, holeIndices) {
+  const hasHoles = holeIndices && holeIndices.length;
+  const outerLen = hasHoles ? holeIndices[0]*2 : data.length;
+  let outerNode = ecLinked(data, 0, outerLen, true);
+  const tris = [];
+  if (!outerNode || outerNode.next === outerNode.prev) return tris;
+  if (hasHoles) outerNode = ecHoles(data, holeIndices, outerNode);
+  ecRun(outerNode, tris, 0);
+  return tris;
+}
+function ecLinked(data, start, end, clockwise) {
+  let last, sum = 0;
+  for (let i = start, j = end - 2; i < end; i += 2) { sum += (data[j] - data[i]) * (data[i+1] + data[j+1]); j = i; }
+  if (clockwise === (sum > 0)) { for (let i = start; i < end; i += 2) last = ecInsert(i/2, data[i], data[i+1], last); }
+  else { for (let i = end - 2; i >= start; i -= 2) last = ecInsert(i/2, data[i], data[i+1], last); }
+  if (last && ecEq(last, last.next)) { ecRemove(last); last = last.next; }
+  return last;
+}
+function ecFilter(start, end) {
+  if (!start) return start;
+  if (!end) end = start;
+  let p = start, again;
+  do {
+    again = false;
+    if (!p.steiner && (ecEq(p, p.next) || ecArea(p.prev, p, p.next) === 0)) {
+      ecRemove(p); p = end = p.prev;
+      if (p === p.next) break;
+      again = true;
+    } else p = p.next;
+  } while (again || p !== end);
+  return end;
+}
+function ecRun(ear, tris, pass) {
+  if (!ear) return;
+  let stop = ear, prev, next, guard = 0;
+  while (ear.prev !== ear.next) {
+    if (++guard > 5e6) return;
+    prev = ear.prev; next = ear.next;
+    if (ecIsEar(ear)) {
+      tris.push(prev.i, ear.i, next.i);
+      ecRemove(ear);
+      ear = next.next; stop = next.next;
+      continue;
+    }
+    ear = next;
+    if (ear === stop) {
+      if (!pass) ecRun(ecFilter(ear), tris, 1);
+      else if (pass === 1) { ear = ecCure(ecFilter(ear), tris); ecRun(ear, tris, 2); }
+      else if (pass === 2) ecSplit(ear, tris);
+      break;
+    }
+  }
+}
+function ecIsEar(ear) {
+  const a = ear.prev, b = ear, c = ear.next;
+  if (ecArea(a, b, c) >= 0) return false;
+  const minX = Math.min(a.x, b.x, c.x), maxX = Math.max(a.x, b.x, c.x), minY = Math.min(a.y, b.y, c.y), maxY = Math.max(a.y, b.y, c.y);
+  let p = c.next;
+  while (p !== a) {
+    if (p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY &&
+        !(p.x === a.x && p.y === a.y) && !(p.x === c.x && p.y === c.y) &&
+        ecPIT(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) && ecArea(p.prev, p, p.next) >= 0) return false;
+    p = p.next;
+  }
+  return true;
+}
+function ecCure(start, tris) {
+  let p = start;
+  do {
+    const a = p.prev, b = p.next.next;
+    if (!ecEq(a, b) && ecIntersects(a, p, p.next, b) && ecLocIn(a, b) && ecLocIn(b, a)) {
+      tris.push(a.i, p.i, b.i);
+      ecRemove(p); ecRemove(p.next);
+      p = start = b;
+    }
+    p = p.next;
+  } while (p !== start);
+  return ecFilter(p);
+}
+function ecSplit(start, tris) {
+  let a = start;
+  do {
+    let b = a.next.next;
+    while (b !== a.prev) {
+      if (a.i !== b.i && ecValidDiag(a, b)) {
+        let c = ecSplitPoly(a, b);
+        a = ecFilter(a, a.next); c = ecFilter(c, c.next);
+        ecRun(a, tris, 0); ecRun(c, tris, 0);
+        return;
+      }
+      b = b.next;
+    }
+    a = a.next;
+  } while (a !== start);
+}
+function ecHoles(data, holeIndices, outerNode) {
+  const queue = [];
+  for (let i = 0; i < holeIndices.length; i++) {
+    const start = holeIndices[i]*2, end = i < holeIndices.length - 1 ? holeIndices[i+1]*2 : data.length;
+    const list = ecLinked(data, start, end, false);
+    if (!list) continue;
+    if (list === list.next) list.steiner = true;
+    queue.push(ecLeftmost(list));
+  }
+  queue.sort((a, b) => a.x - b.x);
+  for (let i = 0; i < queue.length; i++) outerNode = ecElimHole(queue[i], outerNode);
+  return outerNode;
+}
+function ecElimHole(hole, outerNode) {
+  const bridge = ecBridge(hole, outerNode);
+  if (!bridge) return outerNode;
+  const br = ecSplitPoly(bridge, hole);
+  ecFilter(br, br.next);
+  return ecFilter(bridge, bridge.next);
+}
+function ecBridge(hole, outerNode) {
+  let p = outerNode, hx = hole.x, hy = hole.y, qx = -Infinity, m;
+  do {
+    if (hy <= p.y && hy >= p.next.y && p.next.y !== p.y) {
+      const x = p.x + (hy - p.y) * (p.next.x - p.x) / (p.next.y - p.y);
+      if (x <= hx && x > qx) { qx = x; m = p.x < p.next.x ? p : p.next; if (x === hx) return m; }
+    }
+    p = p.next;
+  } while (p !== outerNode);
+  if (!m) return null;
+  const stop = m, mx = m.x, my = m.y;
+  let tanMin = Infinity;
+  p = m;
+  do {
+    if (hx >= p.x && p.x >= mx && hx !== p.x && ecPIT(hy < my ? hx : qx, hy, mx, my, hy < my ? qx : hx, hy, p.x, p.y)) {
+      const tan = Math.abs(hy - p.y) / (hx - p.x);
+      if (ecLocIn(p, hole) && (tan < tanMin || (tan === tanMin && (p.x > m.x || (p.x === m.x && ecSecIn(m, p)))))) { m = p; tanMin = tan; }
+    }
+    p = p.next;
+  } while (p !== stop);
+  return m;
+}
+function ecSecIn(m, p) { return ecArea(m.prev, m, p.prev) < 0 && ecArea(p.next, m, m.next) < 0; }
+function ecLeftmost(start) { let p = start, l = start; do { if (p.x < l.x || (p.x === l.x && p.y < l.y)) l = p; p = p.next; } while (p !== start); return l; }
+function ecPIT(ax, ay, bx, by, cx, cy, px, py) {
+  return (cx - px) * (ay - py) >= (ax - px) * (cy - py) && (ax - px) * (by - py) >= (bx - px) * (ay - py) && (bx - px) * (cy - py) >= (cx - px) * (by - py);
+}
+function ecValidDiag(a, b) {
+  return a.next.i !== b.i && a.prev.i !== b.i && !ecIntersPoly(a, b) &&
+    (ecLocIn(a, b) && ecLocIn(b, a) && ecMidIn(a, b) && (ecArea(a.prev, a, b.prev) || ecArea(a, b.prev, b)) ||
+     ecEq(a, b) && ecArea(a.prev, a, a.next) > 0 && ecArea(b.prev, b, b.next) > 0);
+}
+function ecArea(p, q, r) { return (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y); }
+function ecEq(a, b) { return a.x === b.x && a.y === b.y; }
+function ecSign(n) { return n > 0 ? 1 : n < 0 ? -1 : 0; }
+function ecOnSeg(p, q, r) { return q.x <= Math.max(p.x, r.x) && q.x >= Math.min(p.x, r.x) && q.y <= Math.max(p.y, r.y) && q.y >= Math.min(p.y, r.y); }
+function ecIntersects(p1, q1, p2, q2) {
+  const o1 = ecSign(ecArea(p1, q1, p2)), o2 = ecSign(ecArea(p1, q1, q2)), o3 = ecSign(ecArea(p2, q2, p1)), o4 = ecSign(ecArea(p2, q2, q1));
+  if (o1 !== o2 && o3 !== o4) return true;
+  if (o1 === 0 && ecOnSeg(p1, p2, q1)) return true;
+  if (o2 === 0 && ecOnSeg(p1, q2, q1)) return true;
+  if (o3 === 0 && ecOnSeg(p2, p1, q2)) return true;
+  if (o4 === 0 && ecOnSeg(p2, q1, q2)) return true;
+  return false;
+}
+function ecIntersPoly(a, b) {
+  let p = a;
+  do {
+    if (p.i !== a.i && p.next.i !== a.i && p.i !== b.i && p.next.i !== b.i && ecIntersects(p, p.next, a, b)) return true;
+    p = p.next;
+  } while (p !== a);
+  return false;
+}
+function ecLocIn(a, b) {
+  return ecArea(a.prev, a, a.next) < 0 ? ecArea(a, b, a.next) >= 0 && ecArea(a, a.prev, b) >= 0 : ecArea(a, b, a.prev) < 0 || ecArea(a, a.next, b) < 0;
+}
+function ecMidIn(a, b) {
+  let p = a, inside = false;
+  const px = (a.x + b.x) / 2, py = (a.y + b.y) / 2;
+  do {
+    if (((p.y > py) !== (p.next.y > py)) && p.next.y !== p.y && (px < (p.next.x - p.x) * (py - p.y) / (p.next.y - p.y) + p.x)) inside = !inside;
+    p = p.next;
+  } while (p !== a);
+  return inside;
+}
+function ecSplitPoly(a, b) {
+  const a2 = ecNode(a.i, a.x, a.y), b2 = ecNode(b.i, b.x, b.y), an = a.next, bp = b.prev;
+  a.next = b; b.prev = a; a2.next = an; an.prev = a2; b2.next = a2; a2.prev = b2; bp.next = b2; b2.prev = bp;
+  return b2;
+}
+function ecInsert(i, x, y, last) {
+  const p = ecNode(i, x, y);
+  if (!last) { p.prev = p; p.next = p; } else { p.next = last.next; p.prev = last; last.next.prev = p; last.next = p; }
+  return p;
+}
+function ecRemove(p) { p.next.prev = p.prev; p.prev.next = p.next; }
+function ecNode(i, x, y) { return {i, x, y, prev: null, next: null, steiner: false}; }
+
+/* ---- Mesh indicizzata ---- */
+class Mesh {
+  constructor(name) { this.name = name; this.v = []; this.t = []; }
+  ring(loop, z) {
+    const key = z.toFixed(5);
+    let r = loop.rings.get(key);
+    if (r && r.mesh === this) return r.idx;
+    const p = loop.pts, n = p.length / 2, idx = new Int32Array(n);
+    for (let i = 0; i < n; i++) { idx[i] = this.v.length / 3; this.v.push(p[2*i], p[2*i+1], z); }
+    loop.rings.set(key, {mesh: this, idx});
+    return idx;
+  }
+  // facce piane: items = [{loop, rev}] tutte con regione a sinistra
+  cap(items, z, up) {
+    const outers = [], holes = [];
+    for (const it of items) {
+      const A = it.rev ? -it.loop.area : it.loop.area;
+      (A > 0 ? outers : holes).push({it, A: Math.abs(A)});
+    }
+    outers.sort((a, b) => a.A - b.A);
+    const groups = outers.map(o => ({o, h: []}));
+    for (const h of holes) {
+      const p = h.it.loop.pts;
+      // punto di test: media di due vertici consecutivi (evita vertici condivisi)
+      const tx = p[0], ty = p[1];
+      let g = groups.find(g => g.o.A > h.A && pointInPoly(tx, ty, g.o.it.loop.pts));
+      if (g) g.h.push(h);
+    }
+    for (const g of groups) {
+      const data = [], map = [], holeIdx = [];
+      const addLoop = (it) => {
+        const ring = this.ring(it.loop, z), p = it.loop.pts, n = p.length / 2;
+        for (let q = 0; q < n; q++) { const k = it.rev ? n-1-q : q; data.push(p[2*k], p[2*k+1]); map.push(ring[k]); }
+      };
+      addLoop(g.o.it);
+      for (const h of g.h) { holeIdx.push(data.length / 2); addLoop(h.it); }
+      const tri = earcut(data, holeIdx);
+      // earcut produce triangoli tutti con lo stesso verso: lo stabilisco dall'area totale
+      // (i triangoli degeneri si tengono, altrimenti la mesh resta aperta)
+      let tot = 0;
+      for (let k = 0; k < tri.length; k += 3) {
+        const a = tri[k], b = tri[k+1], c = tri[k+2];
+        tot += (data[2*b]-data[2*a])*(data[2*c+1]-data[2*a+1]) - (data[2*c]-data[2*a])*(data[2*b+1]-data[2*a+1]);
+      }
+      const keep = (tot > 0) === up;
+      for (let k = 0; k < tri.length; k += 3) {
+        const a = tri[k], b = tri[k+1], c = tri[k+2];
+        if (a === b || b === c || a === c) continue;
+        if (keep) this.t.push(map[a], map[b], map[c]); else this.t.push(map[a], map[c], map[b]);
+      }
+    }
+  }
+  // parete verticale lungo un contorno: zl = quota materiale a sinistra, zr = a destra
+  wall(loop, zl, zr) {
+    if (Math.abs(zl - zr) < 1e-9) return;
+    const lo = Math.min(zl, zr), hi = Math.max(zl, zr);
+    const A = this.ring(loop, lo), B = this.ring(loop, hi), n = A.length;
+    for (let p = 0; p < n; p++) {
+      const q = (p + 1) % n;
+      if (zl > zr) this.t.push(A[p], A[q], B[q], A[p], B[q], B[p]);
+      else this.t.push(A[q], A[p], B[p], A[q], B[p], B[q]);
+    }
+  }
+  translate(dx, dy, dz) { for (let i = 0; i < this.v.length; i += 3) { this.v[i] += dx; this.v[i+1] += dy; this.v[i+2] += dz; } }
+  volume() {
+    const v = this.v, t = this.t; let s = 0;
+    for (let k = 0; k < t.length; k += 3) {
+      const a = 3*t[k], b = 3*t[k+1], c = 3*t[k+2];
+      s += v[a]*(v[b+1]*v[c+2] - v[b+2]*v[c+1]) - v[a+1]*(v[b]*v[c+2] - v[b+2]*v[c]) + v[a+2]*(v[b]*v[c+1] - v[b+1]*v[c]);
+    }
+    return s / 6;
+  }
+  bbox() {
+    const v = this.v; const b = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity];
+    for (let i = 0; i < v.length; i += 3) for (let k = 0; k < 3; k++) { if (v[i+k] < b[k]) b[k] = v[i+k]; if (v[i+k] > b[k+3]) b[k+3] = v[i+k]; }
+    return b;
+  }
+}
+function circleLoop(cx, cy, r) {
+  const n = Math.max(24, Math.ceil(2*Math.PI*r / 0.5));
+  const p = new Float64Array(2*n);
+  for (let i = 0; i < n; i++) { const a = 2*Math.PI*i/n; p[2*i] = cx + r*Math.cos(a); p[2*i+1] = cy + r*Math.sin(a); }
+  return {pts: p, area: polyArea(p), rings: new Map()};
+}
+const R = (l) => ({loop: l, rev: true}), R_ = R, N = (l) => ({loop: l, rev: false});
+
+/* ---- Mesher a "terrazze": ogni pixel ha un intervallo di quota [lo,hi] (o vuoto).
+   I confini tra etichette diverse sono catene condivise da facce e pareti -> mesh sempre chiusa. ---- */
+function meshLabels(name, grid, lab, ivs, cands, tol) {
+  const {W, H, ox, oy, res} = grid, CW = W + 1, CH = H + 1;
+  // elimina le configurazioni "a scacchiera" 2x2 (creerebbero spigoli non-manifold)
+  lab = Int32Array.from(lab);
+  for (let pass = 0; pass < 12; pass++) {
+    let changed = 0;
+    for (let j = 1; j < H; j++) for (let i = 1; i < W; i++) {
+      const a = lab[(j-1)*W + i-1], b = lab[(j-1)*W + i], c = lab[j*W + i-1], e = lab[j*W + i];
+      if ((a === e && b !== a && c !== a) || (b === c && a !== b && e !== b)) { lab[j*W + i] = b; changed++; }
+    }
+    if (!changed) break;
+  }
+  const L = (i, j) => (i < 0 || j < 0 || i >= W || j >= H) ? 0 : lab[j*W + i];
+  const DI = [1, 0, -1, 0], DJ = [0, 1, 0, -1];
+  const left = (i, j, d) => d === 0 ? L(i, j-1) : d === 1 ? L(i, j) : d === 2 ? L(i-1, j) : L(i-1, j-1);
+  const isB = (i, j, d) => {
+    const i2 = i + DI[d], j2 = j + DJ[d];
+    if (i2 < 0 || j2 < 0 || i2 > W || j2 > H) return false;
+    return left(i, j, d) !== left(i2, j2, (d + 2) & 3);
+  };
+  const right = (i, j, d) => left(i + DI[d], j + DJ[d], (d + 2) & 3);
+  // vertici di bordo
+  const cidx = new Int32Array(CW*CH).fill(-1);
+  const ci = [], cj = [], deg = [];
+  for (let j = 0; j <= H; j++) for (let i = 0; i <= W; i++) {
+    const a = L(i-1, j-1), b = L(i, j-1), c = L(i-1, j), e = L(i, j);
+    if (a === b && b === c && c === e) continue;
+    let dg = 0; for (let d = 0; d < 4; d++) if (isB(i, j, d)) dg++;
+    if (!dg) continue;
+    cidx[j*CW + i] = ci.length; ci.push(i); cj.push(j); deg.push(dg);
+  }
+  const n = ci.length;
+  const px = new Float64Array(n), py = new Float64Array(n), keep = new Uint8Array(n);
+  for (let k = 0; k < n; k++) { px[k] = ox + (ci[k] - 0.5)*res; py[k] = oy - (cj[k] - 0.5)*res; if (deg[k] !== 2) keep[k] = 1; }
+  // catene tra incroci
+  const eVis = new Uint8Array(CW*CH*2);
+  const eSlot = (i, j, d) => d === 0 ? 2*(j*CW + i) : d === 1 ? 2*(j*CW + i) + 1 : d === 2 ? 2*(j*CW + i - 1) : 2*((j-1)*CW + i) + 1;
+  const chains = [];
+  const walk = (c0, d0) => {
+    const ids = [c0]; let i = ci[c0], j = cj[c0], d = d0;
+    const A = left(i, j, d), B = right(i, j, d);
+    for (let guard = 0; guard < 1e7; guard++) {
+      eVis[eSlot(i, j, d)] = 1;
+      i += DI[d]; j += DJ[d];
+      const c = cidx[j*CW + i];
+      if (c === c0 && deg[c0] === 2) return {ids, A, B, closed: true};
+      ids.push(c);
+      if (deg[c] !== 2) return {ids, A, B, closed: false};
+      const back = (d + 2) & 3; let nd = -1;
+      for (let k = 0; k < 4; k++) if (k !== back && isB(i, j, k)) { nd = k; break; }
+      d = nd;
+    }
+    return {ids, A, B, closed: false};
+  };
+  for (let c = 0; c < n; c++) if (deg[c] !== 2) for (let d = 0; d < 4; d++) if (isB(ci[c], cj[c], d) && !eVis[eSlot(ci[c], cj[c], d)]) chains.push(walk(c, d));
+  for (let c = 0; c < n; c++) if (deg[c] === 2) for (let d = 0; d < 4; d++) if (isB(ci[c], cj[c], d) && !eVis[eSlot(ci[c], cj[c], d)]) chains.push(walk(c, d));
+  // proiezione sub-pixel sulla vera curva (campo di distanza più vicino)
+  const maxMove = 0.49*res, hh = res*0.25;
+  const project = (c) => {
+    const x0 = px[c], y0 = py[c];
+    let best = null, bv = Infinity;
+    for (const cd of cands) { const v = Math.abs(cd.f(x0, y0) - cd.c); if (v < bv) { bv = v; best = cd; } }
+    if (!best || bv > res*1.2) return;
+    let x = x0, y = y0;
+    for (let it = 0; it < 3; it++) {
+      const v = best.f(x, y) - best.c;
+      const gx = (best.f(x + hh, y) - best.f(x - hh, y)) / (2*hh), gy = (best.f(x, y + hh) - best.f(x, y - hh)) / (2*hh);
+      const g2 = gx*gx + gy*gy; if (g2 < 1e-9) break;
+      x -= v*gx/g2; y -= v*gy/g2;
+      const dx = x - x0, dy = y - y0, dl = Math.hypot(dx, dy);
+      if (dl > maxMove) { x = x0 + dx*maxMove/dl; y = y0 + dy*maxMove/dl; }
+    }
+    px[c] = x; py[c] = y;
+  };
+  for (const ch of chains) {
+    const m = ch.ids.length, st = ch.closed ? 0 : 1, en = ch.closed ? m : m - 1;
+    for (let k = st; k < en; k++) project(ch.ids[k]);
+  }
+  // semplificazione (Douglas-Peucker) per catena, coerente per tutte le facce
+  const t2 = tol*tol;
+  const dp = (ids, s, e) => {
+    const stack = [[s, e]];
+    while (stack.length) {
+      const [a, b] = stack.pop(); if (b - a < 2) continue;
+      const A = ids[a], B = ids[b % ids.length];
+      const ax = px[A], ay = py[A], dx = px[B] - ax, dy = py[B] - ay, L2 = dx*dx + dy*dy;
+      let md = -1, mi = -1;
+      for (let k = a + 1; k < b; k++) {
+        const c = ids[k], qx = px[c] - ax, qy = py[c] - ay;
+        const d2 = L2 < 1e-12 ? qx*qx + qy*qy : (qx*dy - qy*dx)**2 / L2;
+        if (d2 > md) { md = d2; mi = k; }
+      }
+      if (md > t2) { keep[ids[mi]] = 1; stack.push([a, mi], [mi, b]); }
+    }
+  };
+  for (const ch of chains) {
+    const ids = ch.ids, m = ids.length;
+    if (ch.closed) {
+      let far = 0, fd = -1;
+      for (let k = 1; k < m; k++) { const d = (px[ids[k]] - px[ids[0]])**2 + (py[ids[k]] - py[ids[0]])**2; if (d > fd) { fd = d; far = k; } }
+      keep[ids[0]] = 1; keep[ids[far]] = 1;
+      // garantisco almeno 3 punti
+      if (m >= 3) { const third = Math.floor(m/3) || 1; if (far !== third) keep[ids[third]] = 1; }
+      dp(ids, 0, far); dp(ids, far, m);
+    } else dp(ids, 0, m - 1);
+  }
+  // vertici 3D
+  const mesh = new Mesh(name);
+  const zmaps = new Map();
+  const V = (c, z) => {
+    const k = z.toFixed(5); let zm = zmaps.get(k);
+    if (!zm) { zm = new Int32Array(n).fill(-1); zmaps.set(k, zm); }
+    if (zm[c] < 0) { zm[c] = mesh.v.length / 3; mesh.v.push(px[c], py[c], z); }
+    return zm[c];
+  };
+  // facce orizzontali: contorni di ogni etichetta con l'etichetta a sinistra
+  const heVis = new Uint8Array(CW*CH*4);
+  const loopsByLab = new Map();
+  for (let c = 0; c < n; c++) {
+    const i0 = ci[c], j0 = cj[c];
+    for (let d0 = 0; d0 < 4; d0++) {
+      if (heVis[(j0*CW + i0)*4 + d0] || !isB(i0, j0, d0)) continue;
+      const X = left(i0, j0, d0); if (X === 0) continue;
+      const ids = []; let i = i0, j = j0, d = d0, guard = 0;
+      do {
+        heVis[(j*CW + i)*4 + d] = 1;
+        const cc = cidx[j*CW + i]; if (keep[cc]) ids.push(cc);
+        i += DI[d]; j += DJ[d];
+        let nd = -1;
+        for (const k of [(d + 3) & 3, d, (d + 1) & 3]) if (isB(i, j, k) && left(i, j, k) === X) { nd = k; break; }
+        if (nd < 0) break;
+        d = nd;
+      } while (!(i === i0 && j === j0 && d === d0) && ++guard < 1e7);
+      if (ids.length < 3) continue;
+      const pts = new Float64Array(ids.length*2);
+      ids.forEach((cc, k) => { pts[2*k] = px[cc]; pts[2*k+1] = py[cc]; });
+      if (!loopsByLab.has(X)) loopsByLab.set(X, []);
+      loopsByLab.get(X).push({ids, pts, area: polyArea(pts)});
+    }
+  }
+  for (const [X, loops] of loopsByLab) {
+    const [lo, hi] = ivs[X];
+    const outers = loops.filter(l => l.area > 0).sort((a, b) => a.area - b.area).map(o => ({o, h: []}));
+    for (const h of loops) {
+      if (h.area >= 0) continue;
+      const p = h.pts, dx = p[2] - p[0], dy = p[3] - p[1], dl = Math.hypot(dx, dy) || 1, eps = res*0.02;
+      const tx = (p[0] + p[2])/2 - dy/dl*eps, ty = (p[1] + p[3])/2 + dx/dl*eps;
+      const g = outers.find(g => g.o.area > -h.area && pointInPoly(tx, ty, g.o.pts));
+      if (g) g.h.push(h);
+    }
+    for (const g of outers) {
+      const data = Array.from(g.o.pts), map = g.o.ids.slice(), holeIdx = [];
+      for (const h of g.h) { holeIdx.push(data.length/2); for (let k = 0; k < h.pts.length; k++) data.push(h.pts[k]); map.push(...h.ids); }
+      const tri = earcut(data, holeIdx);
+      let tot = 0;
+      for (let k = 0; k < tri.length; k += 3) { const a = tri[k], b = tri[k+1], c = tri[k+2]; tot += (data[2*b]-data[2*a])*(data[2*c+1]-data[2*a+1]) - (data[2*c]-data[2*a])*(data[2*b+1]-data[2*a+1]); }
+      const ccw = tot > 0;
+      for (let k = 0; k < tri.length; k += 3) {
+        const a = map[tri[k]], b = map[tri[k+1]], c = map[tri[k+2]];
+        if (a === b || b === c || a === c) continue;
+        if (ccw) { mesh.t.push(V(a, hi), V(b, hi), V(c, hi)); mesh.t.push(V(a, lo), V(c, lo), V(b, lo)); }
+        else { mesh.t.push(V(a, hi), V(c, hi), V(b, hi)); mesh.t.push(V(a, lo), V(b, lo), V(c, lo)); }
+      }
+    }
+  }
+  // pareti verticali lungo le catene
+  const sub = (a, b) => {
+    if (!a) return [];
+    if (!b) return [a];
+    const r = [];
+    if (b[0] > a[0]) r.push([a[0], Math.min(a[1], b[0])]);
+    if (b[1] < a[1]) r.push([Math.max(a[0], b[1]), a[1]]);
+    return r.filter(x => x[1] - x[0] > 1e-9);
+  };
+  // quote presenti su ogni incrocio (per spezzare gli spigoli verticali ed evitare giunzioni a T)
+  const lv = new Map();
+  const wallsOf = (ch) => { const ia = ch.A ? ivs[ch.A] : null, ib = ch.B ? ivs[ch.B] : null; return [sub(ia, ib), sub(ib, ia)]; };
+  for (const ch of chains) {
+    if (ch.closed) continue;
+    const [oa, ob] = wallsOf(ch);
+    for (const c of [ch.ids[0], ch.ids[ch.ids.length - 1]]) {
+      let s = lv.get(c); if (!s) { s = new Set(); lv.set(c, s); }
+      for (const [z0, z1] of [...oa, ...ob]) { s.add(z0); s.add(z1); }
+    }
+  }
+  const col = (c, z0, z1) => {
+    const s = lv.get(c), out = [z0];
+    if (s) for (const z of [...s].sort((a, b) => a - b)) if (z > z0 + 1e-9 && z < z1 - 1e-9) out.push(z);
+    out.push(z1);
+    return out.map(z => V(c, z));
+  };
+  const strip = (p, q, z0, z1) => {   // materiale a sinistra di p->q
+    const A = col(p, z0, z1), B = col(q, z0, z1);
+    let i = 0, j = 0;
+    const zp = [z0, ...[...(lv.get(p) || [])].filter(z => z > z0 + 1e-9 && z < z1 - 1e-9).sort((a, b) => a - b), z1];
+    const zq = [z0, ...[...(lv.get(q) || [])].filter(z => z > z0 + 1e-9 && z < z1 - 1e-9).sort((a, b) => a - b), z1];
+    while (i < A.length - 1 || j < B.length - 1) {
+      const advQ = i >= A.length - 1 || (j < B.length - 1 && zq[j+1] <= zp[i+1]);
+      if (advQ) { mesh.t.push(A[i], B[j], B[j+1]); j++; }
+      else { mesh.t.push(A[i], B[j], A[i+1]); i++; }
+    }
+  };
+  for (const ch of chains) {
+    const ks = ch.ids.filter(c => keep[c]);
+    if (ch.closed) ks.push(ks[0]);
+    const [onlyA, onlyB] = wallsOf(ch);
+    for (let k = 0; k < ks.length - 1; k++) {
+      const p = ks[k], q = ks[k+1];
+      if (p === q) continue;
+      for (const [z0, z1] of onlyA) strip(p, q, z0, z1);
+      for (const [z0, z1] of onlyB) strip(q, p, z0, z1);
+    }
+  }
+  return mesh;
+}
+
+
+/* =====================================================================
+   RASTERIZZAZIONE SORGENTE
+   ===================================================================== */
+function fontStr(sz) { return `${P.italic ? 'italic ' : ''}${P.bold ? 'bold ' : ''}${sz}px "${P.font}"`; }
+function computePadMM() {
+  let pad = 3 + Math.max(0, +P.outline);
+  if (P.mode === 'merge') pad += +P.fuse;
+  if (P.style === 'neon') pad += Math.max(0, +P.neonOffset) + (+P.neonW)/2 + (+P.w) + 1;
+  if (P.mode === 'block') pad += (+P.blockMargin) + 3;
+  return pad;
+}
+function pixelOn(r, g, b, a) {
+  if (a < 128) return false;
+  const lum = r*0.3 + g*0.59 + b*0.11;
+  if (P.invert) return lum >= 128;
+  return P.ignoreWhite ? lum < 225 : true;
+}
+async function rasterize(res) {
+  const padPx = Math.ceil(computePadMM() / res);
+  let cv, W, H;
+  if (P.src === 'text') {
+    const text = (P.text || '').replace(/\r/g, '');
+    const lines = text.split('\n');
+    if (!text.trim()) throw new Error('Scrivi un testo');
+    try { await document.fonts.load(fontStr(60), text); } catch (e) {}
+    const sc = document.createElement('canvas').getContext('2d');
+    sc.font = fontStr(200);
+    const mH = sc.measureText('H');
+    const capRatio = (mH.actualBoundingBoxAscent || 143) / 200;
+    const fpx = (P.capH / res) / capRatio;
+    sc.font = fontStr(fpx);
+    if ('letterSpacing' in sc) sc.letterSpacing = (P.letterSp / res) + 'px';
+    const lineGap = P.lineH / res;
+    const L = lines.map((ln, k) => {
+      const m = sc.measureText(ln || ' ');
+      let x = 0;
+      if (P.align === 'center') x = -m.width / 2; else if (P.align === 'right') x = -m.width;
+      return {t: ln, x, y: k*lineGap, l: m.actualBoundingBoxLeft, r: m.actualBoundingBoxRight, a: m.actualBoundingBoxAscent, d: m.actualBoundingBoxDescent};
+    });
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const l of L) { if (!l.t.trim()) continue; minX = Math.min(minX, l.x - l.l); maxX = Math.max(maxX, l.x + l.r); minY = Math.min(minY, l.y - l.a); maxY = Math.max(maxY, l.y + l.d); }
+    W = Math.ceil(maxX - minX) + 2*padPx + 4; H = Math.ceil(maxY - minY) + 2*padPx + 4;
+    if (W*H > 40e6 || W > 16000 || H > 16000) throw new Error('Scritta troppo grande per questa precisione: aumenta “Precisione calcolo”.');
+    cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d', {willReadFrequently: true});
+    ctx.font = fontStr(fpx);
+    if ('letterSpacing' in ctx) ctx.letterSpacing = (P.letterSp / res) + 'px';
+    ctx.fillStyle = '#000'; ctx.textBaseline = 'alphabetic';
+    for (const l of L) ctx.fillText(l.t, l.x - minX + padPx + 2, l.y - minY + padPx + 2);
+  } else {
+    if (!imgEl) throw new Error('Importa un file SVG o immagine');
+    // 1) trovo il riquadro del disegno vero (senza sfondo vuoto)
+    const nw = imgEl.naturalWidth || 1, nh = imgEl.naturalHeight || 1, k = 1200 / Math.max(nw, nh);
+    const tc = document.createElement('canvas'); tc.width = Math.max(1, Math.round(nw*k)); tc.height = Math.max(1, Math.round(nh*k));
+    const tx = tc.getContext('2d', {willReadFrequently: true}); tx.drawImage(imgEl, 0, 0, tc.width, tc.height);
+    const td = tx.getImageData(0, 0, tc.width, tc.height).data;
+    let u0 = tc.width, u1 = -1, v0 = tc.height, v1 = -1;
+    for (let y = 0; y < tc.height; y++) for (let x = 0; x < tc.width; x++) {
+      const i = 4*(y*tc.width + x);
+      if (pixelOn(td[i], td[i+1], td[i+2], td[i+3])) { if (x < u0) u0 = x; if (x > u1) u1 = x; if (y < v0) v0 = y; if (y > v1) v1 = y; }
+    }
+    if (u1 < 0) throw new Error('Nel file non trovo forme piene (prova “Inverti” o togli “Ignora bianco”)');
+    const fullH = P.imgH / ((v1 - v0 + 1) / tc.height) / res, fullW = fullH * nw / nh;
+    const cw = (u1 - u0 + 1) / tc.width * fullW, chh = (v1 - v0 + 1) / tc.height * fullH;
+    W = Math.ceil(cw) + 2*padPx + 6; H = Math.ceil(chh) + 2*padPx + 6;
+    if (W*H > 40e6 || W > 16000 || H > 16000) throw new Error('Immagine troppo grande per questa precisione: aumenta “Precisione calcolo”.');
+    cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d', {willReadFrequently: true});
+    ctx.drawImage(imgEl, padPx + 3 - u0 / tc.width * fullW, padPx + 3 - v0 / tc.height * fullH, fullW, fullH);
+  }
+  const id = cv.getContext('2d').getImageData(0, 0, W, H).data;
+  const mask = new Uint8Array(W*H);
+  for (let i = 0; i < W*H; i++) mask[i] = P.src === 'text' ? (id[4*i+3] >= 128 ? 1 : 0) : (pixelOn(id[4*i], id[4*i+1], id[4*i+2], id[4*i+3]) ? 1 : 0);
+  return {mask, W, H, res, ox: -W*res/2, oy: H*res/2};
+}
+
+/* separa in pezzi (lettere) con componenti connesse + unione di puntini/accenti */
+function splitPieces(R0) {
+  const {mask, W, H} = R0;
+  const lab = new Int32Array(W*H).fill(-1);
+  const comps = [];
+  const st = new Int32Array(W*H);
+  for (let s = 0; s < W*H; s++) {
+    if (!mask[s] || lab[s] >= 0) continue;
+    const id = comps.length; let sp = 0; st[sp++] = s; lab[s] = id;
+    let x0 = W, x1 = 0, y0 = H, y1 = 0, area = 0;
+    while (sp) {
+      const i = st[--sp], x = i % W, y = (i / W) | 0;
+      area++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const xx = x + dx, yy = y + dy;
+        if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
+        const j = yy*W + xx;
+        if (mask[j] && lab[j] < 0) { lab[j] = id; st[sp++] = j; }
+      }
+    }
+    comps.push({x0, x1, y0, y1, area, parent: id});
+  }
+  const find = (i) => { while (comps[i].parent !== i) i = comps[i].parent = comps[comps[i].parent].parent; return i; };
+  const minArea = 4;
+  for (let a = 0; a < comps.length; a++) for (let b = a+1; b < comps.length; b++) {
+    const A = comps[a], B = comps[b];
+    const ov = Math.min(A.x1, B.x1) - Math.max(A.x0, B.x0);
+    const sw = Math.min(A.x1 - A.x0, B.x1 - B.x0) + 1;
+    const small = Math.min(A.area, B.area), big = Math.max(A.area, B.area);
+    if (ov > 0.5*sw && small <= 0.3*big) { const ra = find(a), rb = find(b); if (ra !== rb) comps[rb].parent = ra; }
+  }
+  const groups = new Map();
+  comps.forEach((c, i) => { if (c.area < minArea) return; const r = find(i); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(i); });
+  const out = [];
+  for (const [r, list] of groups) {
+    let x0 = W, x1 = 0, y0 = H, y1 = 0;
+    for (const i of list) { const c = comps[i]; x0 = Math.min(x0, c.x0); x1 = Math.max(x1, c.x1); y0 = Math.min(y0, c.y0); y1 = Math.max(y1, c.y1); }
+    out.push({ids: new Set(list), x0, x1, y0, y1, lab});
+  }
+  // ordina per righe poi da sinistra a destra
+  const rowH = Math.max(1, ...out.map(g => g.y1 - g.y0)) * 0.6;
+  for (const g of out) g.row = Math.round(((g.y0 + g.y1)/2) / rowH);
+  out.sort((a, b) => a.row !== b.row ? a.row - b.row : a.x0 - b.x0);
+  return out;
+}
+
+/* =====================================================================
+   COSTRUZIONE MODELLO
+   ===================================================================== */
+let MODEL = null;
+function sampleField(pc, X, Y) {
+  const fi = (X - pc.ox) / pc.res, fj = (pc.oy - Y) / pc.res;
+  const i = Math.floor(fi), j = Math.floor(fj);
+  if (i < 0 || j < 0 || i >= pc.W-1 || j >= pc.H-1) return 999;
+  const tx = fi - i, ty = fj - j, f = pc.f, W = pc.W;
+  const a = f[j*W+i], b = f[j*W+i+1], c = f[(j+1)*W+i], d = f[(j+1)*W+i+1];
+  return (a*(1-tx) + b*tx)*(1-ty) + (c*(1-tx) + d*tx)*ty;
+}
+function sampleArr(pc, arr, X, Y) {
+  const fi = (X - pc.ox) / pc.res, fj = (pc.oy - Y) / pc.res;
+  const i = Math.floor(fi), j = Math.floor(fj);
+  if (i < 0 || j < 0 || i >= pc.W-1 || j >= pc.H-1) return 999;
+  const tx = fi - i, ty = fj - j, W = pc.W;
+  const a = arr[j*W+i], b = arr[j*W+i+1], c = arr[(j+1)*W+i], d = arr[(j+1)*W+i+1];
+  return (a*(1-tx) + b*tx)*(1-ty) + (c*(1-tx) + d*tx)*ty;
+}
+function geomParams() {
+  const H = +P.H, w = +P.w, B = +P.B, s = +P.s, L = +P.L, F = +P.F, gap = +P.gap;
+  const block = P.mode === 'block';
+  const step = !!P.step && !block;
+  const errs = [];
+  const T = +P.plateT, Pp = +P.plugP;
+  if (block && H <= T + 1.2 + 4) errs.push('Blocco troppo poco profondo per la lettera con flangia.');
+  if (step && H - L <= B + 0.4) errs.push('Profondità troppo bassa: serve profondità > scalino + fondo.');
+  if (H <= B + 0.4) errs.push('Profondità minore del fondo.');
+  const floorT = step ? -(w + s) : -w;
+  const faceT = step ? -(w + gap) : 0;   // senza scalino: coperchio sopra le pareti
+  const faceZ = block ? H - T - 1.2 : step ? H - L : H;
+  const holesOnFace = !block && P.light !== 'front';
+  return {H, w, B, s, L, F, gap, step, floorT, faceT, faceZ, holesOnFace, errs, block, T, Pp};
+}
+function cutPlan(axis, uc, vlo, vhi) {
+  // linea di taglio con code di rondine alternate; axis 'v' = taglio verticale (x costante)
+  const pitch = 35, Dd = 5, a = 7, b = 10, pts = [[uc, vlo - 80]];
+  const n = Math.max(1, Math.floor((vhi - vlo) / pitch));
+  const st = (vlo + vhi)/2 - (n - 1)*pitch/2;
+  for (let k = 0; k < n; k++) { const v = st + k*pitch, s = k % 2 ? -1 : 1; pts.push([uc, v - a/2], [uc + s*Dd, v - b/2], [uc + s*Dd, v + b/2], [uc, v + a/2]); }
+  pts.push([uc, vhi + 80]);
+  const f = (x, y) => {
+    const u = axis === 'v' ? x : y, v = axis === 'v' ? y : x;
+    let dmin = Infinity, cr = 0;
+    for (let k = 0; k < pts.length - 1; k++) {
+      const u1 = pts[k][0], v1 = pts[k][1], u2 = pts[k+1][0], v2 = pts[k+1][1];
+      const du = u2 - u1, dv = v2 - v1, L2 = du*du + dv*dv;
+      let t = L2 ? ((u - u1)*du + (v - v1)*dv) / L2 : 0; t = t < 0 ? 0 : t > 1 ? 1 : t;
+      const ex = u1 + t*du - u, ey = v1 + t*dv - v, dd = ex*ex + ey*ey; if (dd < dmin) dmin = dd;
+      if ((v1 > v) !== (v2 > v)) { const uu = u1 + (v - v1)*(u2 - u1)/(v2 - v1); if (uu > u) cr++; }
+    }
+    return (cr % 2 ? -1 : 1) * Math.sqrt(dmin);
+  };
+  const xy = pts.map(([u, v]) => axis === 'v' ? [u, v] : [v, u]);
+  return {axis, uc, f, xy};
+}
+function planCuts(pc) {
+  const none = {vc: [], hc: []};
+  if (!P.autoSplit) return none;
+  const w = pc.sizeX, h = pc.sizeY, bx = +P.bedX, by = +P.bedY, m = 14;
+  if ((w <= bx && h <= by) || (w <= by && h <= bx)) return none;
+  const opt = (X, Y) => [Math.max(1, Math.ceil(w / (X - m))), Math.max(1, Math.ceil(h / (Y - m)))];
+  const A = opt(bx, by), B = opt(by, bx);
+  const [nx, ny] = A[0]*A[1] <= B[0]*B[1] ? A : B;
+  const {W, H, res, ox, oy, f} = pc;
+  const col = new Int32Array(W), row = new Int32Array(H);
+  for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) if (f[j*W + i] <= 0) { col[i]++; row[j]++; }
+  const [x0, y0, , x1, y1] = pc.bb;
+  const pick = (cnt, a0, a1, k, nn, toIdx, toW) => {
+    const seg = (a1 - a0) / nn, ideal = a0 + k*seg, win = seg*0.12;
+    let best = ideal, bc = Infinity;
+    for (let a = ideal - win; a <= ideal + win; a += res) {
+      const idx = toIdx(a); if (idx < 0 || idx >= cnt.length) continue;
+      const c = cnt[idx] + Math.abs(a - ideal)*0.01;
+      if (c < bc) { bc = c; best = a; }
+    }
+    return best;
+  };
+  const vc = [], hc = [];
+  for (let k = 1; k < nx; k++) vc.push(cutPlan('v', pick(col, x0, x1, k, nx, a => Math.round((a - ox)/res)), y0, y1));
+  for (let k = 1; k < ny; k++) hc.push(cutPlan('h', pick(row, y0, y1, k, ny, a => Math.round((oy - a)/res)), x0, x1));
+  return {vc, hc, nx, ny};
+}
+function findFloorExtreme(pc, j, side, T) {
+  const W = pc.W, f = pc.f;
+  if (side > 0) { for (let i = W - 2; i > 0; i--) if (f[j*W + i] <= T) return pc.ox + i*pc.res; }
+  else { for (let i = 1; i < W - 1; i++) if (f[j*W + i] <= T) return pc.ox + i*pc.res; }
+  return null;
+}
+function planNotch(P1, P2, G) {
+  const hw = (+P.notchW)/2, T = G.floorT - 0.6;
+  const lo = Math.max(P1.bb[1], P2.bb[1]) + hw + 3, hi = Math.min(P1.bb[4], P2.bb[4]) - hw - 3;
+  if (hi <= lo) return null;
+  const pref = lo + (hi - lo)*0.2, res = P1.res;
+  const cand = [];
+  for (let y = lo; y <= hi; y += res*2) cand.push(y);
+  cand.sort((a, b) => Math.abs(a - pref) - Math.abs(b - pref));
+  const band = (pc, yc, side) => {
+    const xs = [];
+    for (let y = yc - hw - 0.5; y <= yc + hw + 0.5; y += pc.res) {
+      const j = Math.round((pc.oy - y)/pc.res); if (j < 1 || j >= pc.H - 1) return null;
+      const x = findFloorExtreme(pc, j, side, T); if (x === null) return null; xs.push(x);
+    }
+    const mn = Math.min(...xs), mx = Math.max(...xs);
+    if (mx - mn > 5) return null;
+    return side > 0 ? mn - 1 : mx + 1;
+  };
+  for (const yc of cand) {
+    const a = band(P1, yc, 1); if (a === null) continue;
+    const b = band(P2, yc, -1); if (b === null) continue;
+    return [{s: 1, x0: a, yc, hw}, {s: -1, x0: b, yc, hw}];
+  }
+  return null;
+}
+function mountMode() {
+  let m = P.mount || 'none';
+  if (m === 'keyhole' && P.light !== 'front') m = 'screws';   // con l'alone si usano viti + distanziali
+  return m;
+}
+const keyF = (k, ex) => (x, y) => {
+  const dx = x - k.x, dy = y - k.y, ty = Math.max(0, Math.min(k.L, dy));
+  return Math.min(Math.hypot(dx, dy) - (k.R + ex), Math.hypot(dx, dy - ty) - (k.r + ex));
+};
+const notchF = (nt) => nt.type === 'circle' ? (x, y) => Math.hypot(x - nt.x, y - nt.y) - nt.r : (x, y) => Math.max(nt.s > 0 ? nt.x0 - x : x - nt.x0, Math.abs(y - nt.yc) - nt.hw);
+const circF = (h, r) => (x, y) => Math.hypot(x - h.x, y - h.y) - r;
+
+async function buildModel() {
+  const t0 = performance.now();
+  const res = +P.res;
+  const G = geomParams();
+  if (G.errs.length) throw new Error(G.errs[0]);
+  const R0 = await rasterize(res);
+  let pieces = [];
+  const MODE = P.mode, BLOCK = MODE === 'block';
+  const tol = Math.min(0.03, res*0.12);
+  const warns = [];
+  const screwOnPanel = G.holesOnFace;
+  const bossH = 3, bossW = 2.2;
+  const padPx = Math.ceil(computePadMM() / res) + 2;
+  const cropLetters = () => splitPieces(R0).map((g, k) => {
+    const i0 = Math.max(0, g.x0 - padPx), i1 = Math.min(R0.W - 1, g.x1 + padPx);
+    const j0 = Math.max(0, g.y0 - padPx), j1 = Math.min(R0.H - 1, g.y1 + padPx);
+    const W = i1 - i0 + 1, H = j1 - j0 + 1, m = new Uint8Array(W*H);
+    for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
+      const s = (j + j0)*R0.W + (i + i0);
+      m[j*W + i] = R0.mask[s] && g.ids.has(g.lab[s]) ? 1 : 0;
+    }
+    return {name: 'L' + String(k+1).padStart(2, '0'), mask: m, W, H, ox: R0.ox + i0*res, oy: R0.oy - j0*res, row: g.row, i0, j0};
+  });
+  // campo distanza della lettera (con riempimento, fusione, neon, bordo esterno)
+  const letterField = (m0, W, H, merge) => {
+    let m = m0;
+    if (P.fillHoles) m = fillHolesMask(m, W, H);
+    let f = sdf(m, W, H, res);
+    if (merge && +P.fuse > 0) {
+      const r = +P.fuse, m2 = new Uint8Array(W*H);
+      for (let i = 0; i < m2.length; i++) m2[i] = f[i] <= r ? 1 : 0;
+      const f2 = sdf(m2, W, H, res);
+      let m3 = new Uint8Array(W*H);
+      for (let i = 0; i < m3.length; i++) m3[i] = f2[i] <= -r ? 1 : 0;
+      if (P.fillHoles) m3 = fillHolesMask(m3, W, H);
+      f = sdf(m3, W, H, res);
+    }
+    f = blur3(f, W, H);
+    if (P.style === 'neon' && !BLOCK) {
+      const o = +P.neonOffset, hw = (+P.neonW)/2 + G.w + (G.step ? G.s : 0);
+      for (let i = 0; i < f.length; i++) f[i] = Math.abs(f[i] - o) - hw;
+    } else if (+P.outline) {
+      const o = +P.outline;
+      for (let i = 0; i < f.length; i++) f[i] -= o;
+    }
+    return f;
+  };
+  const fixBorder = (f, W, H) => {
+    for (let i = 0; i < W; i++) { f[i] = Math.max(f[i], res); f[(H-1)*W + i] = Math.max(f[(H-1)*W + i], res); }
+    for (let j = 0; j < H; j++) { f[j*W] = Math.max(f[j*W], res); f[j*W + W-1] = Math.max(f[j*W + W-1], res); }
+  };
+  const lowestY = (list) => { let yb = Infinity; for (const pc of list) for (let j = 0; j < pc.H; j++) for (let i = 0; i < pc.W; i++) if (pc.f[j*pc.W + i] <= 0) { const Y = pc.oy - j*res; if (Y < yb) yb = Y; } return yb; };
+  const applyBaseCut = (list) => {
+    if (!P.flatBase || BLOCK) return;
+    const yc = lowestY(list) + Math.max(0, +P.baseCut);
+    for (const pc of list) for (let j = 0; j < pc.H; j++) { const Y = pc.oy - j*res; for (let i = 0; i < pc.W; i++) { const k = j*pc.W + i; pc.f[k] = Math.max(pc.f[k], yc - Y); } }
+  };
+  if (MODE === 'merge' || (BLOCK && P.blockJoin)) {
+    const pc = {name: BLOCK ? 'Pannello' : 'Scritta', W: R0.W, H: R0.H, ox: R0.ox, oy: R0.oy, row: 0};
+    pc.f = letterField(R0.mask, R0.W, R0.H, MODE === 'merge');
+    pieces.push(pc);
+    applyBaseCut(pieces);
+  } else if (MODE === 'overlap') {
+    // ogni lettera con la sua cornice; la lettera dopo copre la precedente (o viceversa)
+    const L = cropLetters();
+    for (const l of L) { l.f = letterField(l.mask, l.W, l.H, false); }
+    applyBaseCut(L);
+    // avvicino le lettere finché le cornici si sovrappongono della quantità scelta
+    const ovPx = Math.round(Math.max(0, +P.overlapAmt) / res);
+    const ext = (l) => { const lo = new Map(), hi = new Map(); for (let j = 0; j < l.H; j++) { let a = -1, b = -1; for (let i = 0; i < l.W; i++) if (l.f[j*l.W + i] <= 0) { if (a < 0) a = i; b = i; } if (a >= 0) { lo.set(j + l.j0, a + l.i0); hi.set(j + l.j0, b + l.i0); } } return {lo, hi}; };
+    let prevHi = null, prevRow = null;
+    for (const l of L) {
+      const e = ext(l);
+      if (prevHi && l.row === prevRow) {
+        let g = Infinity;
+        for (const [j, a] of e.lo) if (prevHi.has(j)) g = Math.min(g, a - prevHi.get(j));
+        if (isFinite(g)) {
+          const shift = Math.max(-l.i0, Math.min(0, -(g + ovPx)));
+          if (shift) { l.i0 += shift; l.ox += shift*res; for (const [j, a] of e.lo) e.lo.set(j, a + shift); for (const [j, b] of e.hi) e.hi.set(j, b + shift); }
+        }
+      } else prevHi = new Map();
+      for (const [j, b] of e.hi) prevHi.set(j, Math.max(prevHi.get(j) ?? -1, b));
+      prevRow = l.row;
+    }
+    const GW = R0.W, GH = R0.H, owner = new Int16Array(GW*GH).fill(-1);
+    const order = L.map((_, k) => k); if (P.overlapOrder === 'prev') order.reverse();
+    for (const k of order) { const l = L[k]; for (let j = 0; j < l.H; j++) for (let i = 0; i < l.W; i++) if (l.f[j*l.W + i] <= 0) owner[(j + l.j0)*GW + i + l.i0] = k; }
+    const um = new Uint8Array(GW*GH); for (let i = 0; i < um.length; i++) um[i] = owner[i] >= 0 ? 1 : 0;
+    const fU = blur3(sdf(um, GW, GH, res), GW, GH);
+    const Gf = Float32Array.from(fU);
+    L.forEach((l, k) => {
+      const vm = new Uint8Array(l.W*l.H);
+      for (let j = 0; j < l.H; j++) for (let i = 0; i < l.W; i++) vm[j*l.W + i] = owner[(j + l.j0)*GW + i + l.i0] === k ? 1 : 0;
+      const fv = blur3(sdf(vm, l.W, l.H, res), l.W, l.H);
+      for (let j = 0; j < l.H; j++) for (let i = 0; i < l.W; i++) { const g = (j + l.j0)*GW + i + l.i0; if (owner[g] === k) Gf[g] = Math.min(fv[j*l.W + i], -1e-4); }
+    });
+    pieces.push({name: 'Scritta', W: GW, H: GH, ox: R0.ox, oy: R0.oy, row: 0, f: Gf, fU, owner, letters: L.map(l => ({row: l.row}))});
+  } else {
+    pieces = cropLetters();
+    for (const pc of pieces) pc.f = letterField(pc.mask, pc.W, pc.H, false);
+    applyBaseCut(pieces);
+  }
+  for (const pc of pieces) delete pc.mask;
+  // lettere su blocchi: il campo principale diventa il box, la lettera resta in fL
+  if (BLOCK) {
+    const yb = lowestY(pieces), m = +P.blockMargin, rr = Math.max(0, +P.blockRadius), gapB = 1;
+    // 1) riquadri attorno alle lettere
+    for (const pc of pieces) {
+      pc.fL = pc.f;
+      let x0 = Infinity, x1 = -Infinity, y1 = -Infinity, y0 = Infinity;
+      for (let j = 0; j < pc.H; j++) for (let i = 0; i < pc.W; i++) if (pc.fL[j*pc.W + i] <= 0) { const X = pc.ox + i*res, Y = pc.oy - j*res; x0 = Math.min(x0, X); x1 = Math.max(x1, X); y0 = Math.min(y0, Y); y1 = Math.max(y1, Y); }
+      pc.lx = [x0, x1];
+      pc.box = [x0 - m, (P.flatBase ? yb : y0) - m, x1 + m, y1 + m];
+    }
+    // 2) blocchi vicini: si toccano a metà invece di sovrapporsi
+    for (let k = 0; k < pieces.length - 1; k++) {
+      const a = pieces[k], b = pieces[k+1];
+      if (a.row !== b.row || a.box[2] + gapB <= b.box[0]) continue;
+      const mid = (a.lx[1] + b.lx[0]) / 2;
+      a.box[2] = mid - gapB/2; b.box[0] = mid + gapB/2;
+      const need = G.w + 0.5 + (+P.gap) + 1.5 + 0.5;
+      if (a.box[2] - a.lx[1] < need || b.lx[0] - b.box[0] < need) warns.push(`${a.name}/${b.name}: lettere troppo vicine per i blocchi, aumenta la spaziatura lettere`);
+    }
+    // 3) campo del blocco (rettangolo arrotondato)
+    for (const pc of pieces) {
+      const [bx0, by0, bx1, by1] = pc.box;
+      const cx = (bx0 + bx1)/2, cy = (by0 + by1)/2, hx = (bx1 - bx0)/2, hy = (by1 - by0)/2, r = Math.max(0, Math.min(rr, hx - 1, hy - 1));
+      const box = (X, Y) => { const qx = Math.abs(X - cx) - (hx - r), qy = Math.abs(Y - cy) - (hy - r); return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - r; };
+      const f = new Float32Array(pc.W*pc.H);
+      for (let j = 0; j < pc.H; j++) for (let i = 0; i < pc.W; i++) f[j*pc.W + i] = box(pc.ox + i*res, pc.oy - j*res);
+      pc.f = f;
+      fixBorder(pc.fL, pc.W, pc.H);
+    }
+  }
+  for (const pc of pieces) {
+    pc.res = res;
+    const f = pc.f;
+    fixBorder(f, pc.W, pc.H);
+    if (pc.fU) fixBorder(pc.fU, pc.W, pc.H);
+    // contorni per pianta 2D ed esportazione SVG/DXF
+    const CL = (t, ff) => contourLoops(ff || f, pc.W, pc.H, t, pc.ox, pc.oy, res, tol);
+    pc.L0 = pc.fU ? CL(0, pc.fU) : CL(0);
+    pc.Lw = CL(-G.w);
+    pc.Lfloor = G.step ? CL(G.floorT) : pc.Lw;
+    pc.Lface = BLOCK ? CL(+P.gap, pc.fL) : G.step ? CL(G.faceT) : pc.L0;
+    if (!pc.L0.length) { pc.empty = true; continue; }
+    let dmin = 0;
+    for (let i = 0; i < f.length; i++) if (f[i] < dmin) dmin = f[i];
+    pc.dmin = dmin;
+    pc.channel = Math.max(0, 2*(G.floorT - dmin));
+    pc.perim = pc.Lfloor.reduce((s, l) => s + polyLen(l.pts), 0);
+    let bx0 = Infinity, bx1 = -Infinity, by0 = Infinity, by1 = -Infinity;
+    for (const l of pc.L0) for (let k = 0; k < l.pts.length; k += 2) { bx0 = Math.min(bx0, l.pts[k]); bx1 = Math.max(bx1, l.pts[k]); by0 = Math.min(by0, l.pts[k+1]); by1 = Math.max(by1, l.pts[k+1]); }
+    pc.bb = [bx0, by0, 0, bx1, by1, G.H];
+    pc.sizeX = bx1 - bx0; pc.sizeY = by1 - by0;
+    // ---- fori cavo e viti ----
+    pc.holes = []; pc.screws = [];
+    const regionT = screwOnPanel ? G.faceT : G.floorT;
+    const ok = (x, y, r) => sampleField(pc, x, y) <= regionT - r - 0.8;
+    const best = (xa, xb, r, avoid) => {
+      let bv = Infinity, bi = -1;
+      for (let j = 1; j < pc.H-1; j++) for (let i = 1; i < pc.W-1; i++) {
+        const v = f[j*pc.W + i]; if (v >= bv) continue;
+        const X = pc.ox + i*res; if (X < xa || X > xb) continue;
+        const Y = pc.oy - j*res;
+        if (avoid.some(h => Math.hypot(h.x - X, h.y - Y) < h.r + r + 3)) continue;
+        bv = v; bi = j*pc.W + i;
+      }
+      if (bi < 0) return null;
+      const x = pc.ox + (bi % pc.W)*res, y = pc.oy - ((bi / pc.W) | 0)*res;
+      return ok(x, y, r) ? {x, y} : null;
+    };
+    const third = pc.sizeX / 3;
+    if (P.holesAuto && +P.holeD > 0) {
+      const r = (+P.holeD)/2;
+      const c = best(bx0 + third, bx1 - third, r, []) || best(-Infinity, Infinity, r, []);
+      if (c) pc.holes.push({x: c.x, y: c.y, d: +P.holeD, r, kind: 'cavo'});
+      else warns.push(`${pc.name}: spazio insufficiente per il foro cavo Ø${P.holeD}`);
+    }
+    pc.keys = [];
+    const MM = mountMode();
+    if (P.holesAuto && MM === 'keyhole') {
+      const R = (+P.headD)/2 + 0.3, r = (+P.fixD)/2 + 0.25, Lk = (+P.headD) + 1;
+      const ns = pc.sizeX < 70 ? 1 : Math.max(2, Math.ceil(pc.sizeX / 170) + 1);
+      for (let k = 0; k < ns; k++) {
+        const xa = ns === 1 ? -Infinity : bx0 + k*pc.sizeX/ns, xb = ns === 1 ? Infinity : bx0 + (k + 1)*pc.sizeX/ns;
+        // cerco il punto più "dentro" la lettera dove l'asola entra tutta
+        let bv = Infinity, bk = null;
+        for (let j = 1; j < pc.H - 1; j++) for (let i = 1; i < pc.W - 1; i++) {
+          const v = f[j*pc.W + i]; if (v >= bv || v > regionT - R) continue;
+          const X = pc.ox + i*res; if (X < xa || X > xb) continue;
+          const Y = pc.oy - j*res;
+          const kk = {x: X, y: Y - Lk/2, R, r, L: Lk};
+          if (!ok(kk.x, kk.y, R) || !ok(kk.x, kk.y + Lk, r)) continue;
+          if (pc.holes.some(h => Math.hypot(h.x - X, h.y - Y) < h.r + R + bossW + Lk/2 + 1)) continue;
+          if (pc.keys.some(q => Math.hypot(q.x - X, q.y + Lk/2 - Y) < 2*R + Lk + 6)) continue;
+          bv = v; bk = kk;
+        }
+        if (bk) pc.keys.push(bk);
+      }
+      if (!pc.keys.length) warns.push(`${pc.name}: niente spazio per le asole di aggancio`);
+    }
+    if (P.holesAuto && MM === 'screws') {
+      const rs = (+P.fixD)/2, rc = rs + 0.5;
+      const ns = pc.sizeX < 70 ? 1 : Math.max(2, Math.ceil(pc.sizeX / 170) + 1);
+      for (let k = 0; k < ns; k++) {
+        const xa = ns === 1 ? -Infinity : bx0 + k*pc.sizeX/ns, xb = ns === 1 ? Infinity : bx0 + (k + 1)*pc.sizeX/ns;
+        const c = best(xa, xb, rc, [...pc.holes, ...pc.screws]);
+        if (c) pc.screws.push({x: c.x, y: c.y, d: +P.fixD, r: rc, rs});
+      }
+      if (!pc.screws.length) warns.push(`${pc.name}: niente spazio per le viti di fissaggio`);
+    }
+    for (const h of manualHoles) {
+      if (sampleField(pc, h.x, h.y) > 0) continue;
+      if (ok(h.x, h.y, h.d/2)) pc.holes.push(Object.assign({r: h.d/2}, h));
+      else warns.push(`${pc.name}: foro manuale troppo vicino alla parete (ignorato)`);
+    }
+    pc.Lholes = [...pc.holes, ...pc.screws].map(h => circleLoop(h.x, h.y, h.d/2));
+    for (const k of pc.keys) {   // contorno asola per pianta / export
+      const pts = [], th = Math.atan2(Math.sqrt(Math.max(0, k.R*k.R - k.r*k.r)), k.r);
+      for (let q = 0; q <= 40; q++) { const a = (Math.PI - th) + (2*Math.PI - (Math.PI - 2*th))*q/40; pts.push(k.x + k.R*Math.cos(a), k.y + k.R*Math.sin(a)); }
+      for (let q = 0; q <= 16; q++) { const a = Math.PI*q/16; pts.push(k.x + k.r*Math.cos(a), k.y + k.L + k.r*Math.sin(a)); }
+      k.outline = new Float64Array(pts);
+      pc.Lholes.push({pts: k.outline, area: 0, rings: new Map()});
+    }
+    pc.notches = [];
+  }
+  pieces = pieces.filter(p => !p.empty);
+  if (!pieces.length) throw new Error('Nessuna forma trovata');
+  // ---- passaggio cavi tra lettere vicine della stessa riga ----
+  // passaggi cavo interni tra lettere sovrapposte (stile "bordo per lettera")
+  if (P.cableNotch && MODE === 'overlap') {
+    const pc = pieces[0], {W, H, owner, f} = pc, n = pc.letters.length;
+    const rN = Math.max(G.w + (G.step ? G.s : 0) + 2, (+P.notchW)/2);
+    const probe = rN - 1, T = G.floorT - 0.3;
+    const at = (X, Y) => { const i = Math.round((X - pc.ox)/res), j = Math.round((pc.oy - Y)/res); if (i < 0 || j < 0 || i >= W || j >= H) return [-1, 9]; const k = j*W + i; return [owner[k], f[k]]; };
+    for (let a = 0; a < n - 1; a++) {
+      const b = a + 1; if (pc.letters[a].row !== pc.letters[b].row) continue;
+      let bestP = null, bc = Infinity;
+      for (let j = 1; j < H - 1; j += 2) for (let i = 1; i < W - 1; i += 2) {
+        const k = j*W + i; if (owner[k] !== a) continue;
+        if (owner[k+1] !== b && owner[k-1] !== b && owner[k+W] !== b && owner[k-W] !== b) continue;
+        if (pc.fU[k] > -(rN + 0.5)) continue;   // il passaggio non deve bucare il bordo esterno
+        const X = pc.ox + i*res, Y = pc.oy - j*res;
+        let okA = false, okB = false;
+        for (let q = 0; q < 16; q++) { const an = q*Math.PI/8; const [o, v] = at(X + probe*Math.cos(an), Y + probe*Math.sin(an)); if (v <= T) { if (o === a) okA = true; if (o === b) okB = true; } }
+        if (!okA || !okB) continue;
+        const cost = Y;   // preferisco in basso (lato dove escono i cavi)
+        if (cost < bc) { bc = cost; bestP = {x: X, y: Y}; }
+      }
+      if (bestP) pc.notches.push({type: 'circle', x: bestP.x, y: bestP.y, r: rN});
+      else warns.push(`Lettere ${a+1}→${b+1}: non trovo dove far passare il cavo`);
+    }
+  }
+  if (P.cableNotch && (MODE === 'separate' || (BLOCK && !P.blockJoin)) && pieces.length > 1) {
+    const hN = +P.notchH;
+    if (G.holesOnFace ? G.H - hN <= G.B + 1 : false) warns.push('Passaggio cavi troppo alto per questa profondità');
+    else for (let k = 0; k < pieces.length - 1; k++) {
+      const a = pieces[k], b = pieces[k+1];
+      if (a.row !== b.row) continue;
+      const nt = planNotch(a, b, G);
+      if (nt) { a.notches.push(nt[0]); b.notches.push(nt[1]); }
+      else warns.push(`${a.name}→${b.name}: non trovo dove far passare il cavo`);
+    }
+  }
+  // ---- costruzione pezzi (con divisione automatica) ----
+  const kerf = Math.max(0, +P.kerf);
+  for (const pc of pieces) {
+    const {W, H, ox, oy, f} = pc;
+    const cuts = planCuts(pc);
+    pc.cuts = [...cuts.vc, ...cuts.hc];
+    const nx = cuts.vc.length + 1, ny = cuts.hc.length + 1;
+    const part = new Int16Array(W*H);
+    if (pc.cuts.length) {
+      for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
+        const idx = j*W + i; if (f[idx] > 0) { part[idx] = -1; continue; }
+        const X = ox + i*res, Y = oy - j*res;
+        let ix = 0, iy = 0, kf = false;
+        for (const c of cuts.vc) { const v = c.f(X, Y); if (Math.abs(v) < kerf/2) kf = true; if (v > 0) ix++; }
+        for (const c of cuts.hc) { const v = c.f(X, Y); if (Math.abs(v) < kerf/2) kf = true; if (v > 0) iy++; }
+        part[idx] = kf ? -1 : iy*nx + ix;
+      }
+    }
+    const nParts = nx*ny;
+    const dCand = (c) => ({f: (x, y) => sampleField(pc, x, y), c});
+    const cutCands = [];
+    for (const c of pc.cuts) { cutCands.push({f: c.f, c: kerf/2}, {f: c.f, c: -kerf/2}); }
+    const holeCands = pc.holes.map(h => ({f: circF(h, h.d/2), c: 0}));
+    const screwCands = pc.screws.map(h => ({f: circF(h, h.rs), c: 0}));
+    const bossCands = (!screwOnPanel) ? pc.screws.map(h => ({f: circF(h, h.rs + bossW), c: 0})) : [];
+    const notchCands = pc.notches.map(nt => ({f: notchF(nt), c: 0}));
+    const hCands = [dCand(0), dCand(-G.w), ...(G.step ? [dCand(G.floorT)] : []), ...(screwOnPanel ? [] : [...holeCands, ...screwCands]), ...bossCands, ...notchCands, ...cutCands];
+    const fCands = [dCand(G.faceT), ...(screwOnPanel ? [...holeCands, ...screwCands] : []), ...cutCands];
+    const notchFs = pc.notches.map(notchF);
+    const keyFs = pc.keys.map(k => ({f0: keyF(k, 0), fb: keyF(k, bossW)}));
+    hCands.push(...pc.keys.flatMap(k => [{f: keyF(k, 0), c: 0}, {f: keyF(k, bossW), c: 0}]));
+    const hN = +P.notchH;
+    pc.parts = [];
+    const grid = {W, H, ox, oy, res};
+    for (let p = 0; p < nParts; p++) {
+      // etichette scocca
+      const ivMap = new Map(), ivs = [null];
+      const lid = (lo, hi) => { const k = lo.toFixed(4) + '|' + hi.toFixed(4); let v = ivMap.get(k); if (v === undefined) { v = ivs.length; ivs.push([lo, hi]); ivMap.set(k, v); } return v; };
+      const labH = new Int32Array(W*H), labF = new Int32Array(W*H);
+      const ivF = [null, [0, G.F]];
+      let any = false;
+      for (let j = 1; j < H - 1; j++) for (let i = 1; i < W - 1; i++) {
+        const idx = j*W + i, d = f[idx];
+        if (d > 0) continue;
+        if (pc.cuts.length && part[idx] !== p) continue;
+        const X = ox + i*res, Y = oy - j*res;
+        let lo = 0, hi;
+        let inHole = false;
+        for (const h of pc.holes) if ((X - h.x)**2 + (Y - h.y)**2 <= h.r*h.r) { inHole = true; break; }
+        let inScrew = false, inBoss = false;
+        for (const h of pc.screws) { const q = (X - h.x)**2 + (Y - h.y)**2; if (q <= h.rs*h.rs) inScrew = true; else if (q <= (h.rs + bossW)**2) inBoss = true; }
+        // faccia / pannello
+        if (d <= G.faceT && !(screwOnPanel && (inHole || inScrew))) labF[idx] = 1;
+        // scocca
+        if (d > -G.w) hi = G.H;
+        else if (G.step && d > G.floorT) hi = G.H - G.L;
+        else {
+          hi = G.B;
+          if (!screwOnPanel) { if (inHole || inScrew) continue; if (inBoss) hi = G.B + bossH; }
+          for (const k of keyFs) { const v = k.f0(X, Y); if (v <= 0) { hi = -1; break; } if (k.fb(X, Y) <= 0) hi = G.B + bossH; }
+          if (hi < 0) continue;
+        }
+        for (const nf of notchFs) if (nf(X, Y) <= 0) { if (P.light === 'front') lo = hN; else hi = Math.min(hi, G.H - hN); }
+        if (hi - lo <= 1e-6) continue;
+        labH[idx] = lid(lo, hi); any = true;
+      }
+      if (BLOCK) {
+        // ---- lettere su blocchi: box con apertura, coperchio posteriore, lettera trasparente con flangia ----
+        labH.fill(0); any = false;
+        const labL = new Int32Array(W*H), labP = new Int32Array(W*H);
+        const ivL = [null, [0, G.B], [0, G.B + bossH]], ivP = [null, [0, 1.2 + G.T + G.Pp], [0, 1.2]];
+        const fL = pc.fL, gp = +P.gap;
+        for (let j = 1; j < H - 1; j++) for (let i = 1; i < W - 1; i++) {
+          const idx = j*W + i, d = f[idx];
+          if (d > 0) continue;
+          if (pc.cuts.length && part[idx] !== p) continue;
+          const X = ox + i*res, Y = oy - j*res, dl = fL[idx];
+          // box
+          if (d > -G.w) { let lo = 0; for (const nf of notchFs) if (nf(X, Y) <= 0) lo = hN; if (G.H - lo > 1e-6) { labH[idx] = lid(lo, G.H); any = true; } }
+          else if (dl > gp) { labH[idx] = lid(G.H - G.T, G.H); any = true; }
+          // lettera trasparente
+          if (dl <= 0) labP[idx] = 1; else if (dl <= gp + 1.5 && d <= -G.w - 0.5) labP[idx] = 2;
+          // coperchio posteriore
+          let inHole = false, inScrew = false, inBoss = false;
+          for (const h of pc.holes) if ((X - h.x)**2 + (Y - h.y)**2 <= h.r*h.r) inHole = true;
+          for (const h of pc.screws) { const q = (X - h.x)**2 + (Y - h.y)**2; if (q <= h.rs*h.rs) inScrew = true; else if (q <= (h.rs + bossW)**2) inBoss = true; }
+          let lv = 1;
+          if (inHole || inScrew) lv = 0; else if (inBoss && d <= -G.w - 0.3) lv = 2;
+          for (const k of keyFs) { if (k.f0(X, Y) <= 0) { lv = 0; break; } if (k.fb(X, Y) <= 0 && d <= -G.w - 0.3) lv = 2; }
+          labL[idx] = lv;
+        }
+        if (!any) continue;
+        const sfx = nParts > 1 ? String.fromCharCode(97 + p) : '', nm = pc.name + sfx;
+        const fLc = (c) => ({f: (x, y) => sampleArr(pc, fL, x, y), c});
+        const hs = meshLabels(nm + '_blocco', grid, labH, ivs, [dCand(0), dCand(-G.w), fLc(gp), ...notchCands, ...cutCands], tol);
+        const lidM = meshLabels(nm + '_coperchio', grid, labL, ivL, [dCand(0), dCand(-G.w - 0.3), ...holeCands, ...screwCands, ...bossCands, ...pc.keys.flatMap(k => [{f: keyF(k, 0), c: 0}, {f: keyF(k, bossW), c: 0}]), ...cutCands], tol);
+        const plug = meshLabels(nm + '_lettera', grid, labP, ivP, [fLc(0), fLc(gp + 1.5), dCand(-G.w - 0.5), ...cutCands], tol);
+        hs.printFlipH = G.H;   // si stampa a faccia in giù
+        const bb = hs.bbox(), sx = bb[3] - bb[0], sy = bb[4] - bb[1];
+        const fits = (sx <= +P.bedX && sy <= +P.bedY) || (sx <= +P.bedY && sy <= +P.bedX);
+        pc.parts.push({name: nm, housing: hs, face: plug, lid: lidM, sizeX: sx, sizeY: sy, fits, volH: hs.volume() + lidM.volume(), volF: plug.volume()});
+        continue;
+      }
+      if (!any) continue;
+      const suffix = nParts > 1 ? String.fromCharCode(97 + p) : '';
+      const nm = pc.name + suffix;
+      const hs = meshLabels(nm + '_scocca', grid, labH, ivs, hCands, tol);
+      const fc = meshLabels(nm + (P.light === 'front' ? '_faccia' : '_pannello'), grid, labF, ivF, fCands, tol);
+      const bb = hs.bbox(), sx = bb[3] - bb[0], sy = bb[4] - bb[1];
+      const fits = (sx <= +P.bedX && sy <= +P.bedY) || (sx <= +P.bedY && sy <= +P.bedX);
+      pc.parts.push({name: nm, housing: hs, face: fc, sizeX: sx, sizeY: sy, fits, volH: hs.volume(), volF: fc.volume()});
+    }
+    pc.volH = pc.parts.reduce((s, q) => s + q.volH, 0);
+    pc.volF = pc.parts.reduce((s, q) => s + q.volF, 0);
+    pc.fits = pc.parts.every(q => q.fits);
+    if (pc.parts.length > 1) warns.push(`${pc.name}: diviso in ${pc.parts.length} parti con incastri (piatto ${P.bedX}×${P.bedY})`);
+  }
+  // ---- distanziali a muro (tubi) ----
+  const tubes = [];
+  if (P.standoffs && mountMode() === 'screws') {
+    const R = (+P.postD)/2, r = (+P.fixD)/2 + 0.25, S = +P.postL;
+    if (R - r < 1) warns.push('Distanziali: diametro esterno troppo piccolo rispetto alla vite');
+    else for (const pc of pieces) for (const s of pc.screws) {
+      const m = new Mesh('Distanziale_' + String(tubes.length + 1).padStart(2, '0'));
+      const o = circleLoop(s.x, s.y, R), i = circleLoop(s.x, s.y, r);
+      m.cap([N(o), R_(i)], S, true); m.cap([N(o), R_(i)], 0, false);
+      m.wall(o, S, 0); m.wall(i, 0, S);
+      m.at = {x: s.x, y: s.y};
+      tubes.push(m);
+    }
+  }
+  const all = pieces.flatMap(p => p.L0.flatMap(l => Array.from(l.pts)));
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (let k = 0; k < all.length; k += 2) { x0 = Math.min(x0, all[k]); x1 = Math.max(x1, all[k]); y0 = Math.min(y0, all[k+1]); y1 = Math.max(y1, all[k+1]); }
+  // con luce retro il "fondo" è il fronte: specchio i pezzi perché la scritta si legga dal davanti
+  const mirror = P.light !== 'front';
+  if (mirror) {
+    const flip = (m) => { for (let i = 0; i < m.v.length; i += 3) m.v[i] = -m.v[i]; for (let i = 0; i < m.t.length; i += 3) { const t = m.t[i+1]; m.t[i+1] = m.t[i+2]; m.t[i+2] = t; } };
+    for (const pc of pieces) for (const q of pc.parts) { flip(q.housing); flip(q.face); }
+    for (const t of tubes) { flip(t); t.at.x = -t.at.x; }
+  }
+  return {pieces, tubes, G, warns, mirror, bbox: [x0, y0, x1, y1], bbox3: mirror ? [-x1, y0, -x0, y1] : [x0, y0, x1, y1], ms: performance.now() - t0, res};
+}
+
+/* =====================================================================
+   VISTA 2D (PIANTA)
+   ===================================================================== */
+const cPlan = document.getElementById('cPlan'), ctxP = cPlan.getContext('2d');
+const V2 = {s: 2, cx: 0, cy: 0, fitted: false, tool: null, mx: null, my: null};
+function resizeCanvas(c) {
+  const r = c.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  const w = Math.max(10, Math.round(r.width*dpr)), h = Math.max(10, Math.round(r.height*dpr));
+  if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+  return dpr;
+}
+function fit2D() {
+  if (!MODEL) return;
+  const dpr = resizeCanvas(cPlan);
+  const [x0, y0, x1, y1] = MODEL.bbox;
+  const W = cPlan.width / dpr, H = cPlan.height / dpr;
+  if (W < 200 || H < 150) { V2.fitted = false; return; }
+  V2.s = Math.min((W - 120) / Math.max(1, x1 - x0), (H - 120) / Math.max(1, y1 - y0));
+  V2.cx = (x0 + x1) / 2; V2.cy = (y0 + y1) / 2; V2.fitted = true;
+}
+function w2s(x, y, W, H) { return [W/2 + (x - V2.cx)*V2.s, H/2 - (y - V2.cy)*V2.s]; }
+function s2w(px, py, W, H) { return [V2.cx + (px - W/2)/V2.s, V2.cy - (py - H/2)/V2.s]; }
+function niceStep(px) { const c = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000]; for (const v of c) if (v*V2.s >= px) return v; return 1000; }
+function draw2D() {
+  const dpr = resizeCanvas(cPlan);
+  const W = cPlan.width / dpr, H = cPlan.height / dpr, c = ctxP;
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  c.fillStyle = '#0b1622'; c.fillRect(0, 0, W, H);
+  // griglia
+  const minor = niceStep(12), major = minor * (String(minor)[0] === '2' ? 5 : (String(minor)[0] === '5' ? 2 : 10));
+  const [wx0, wy1] = s2w(0, 0, W, H), [wx1, wy0] = s2w(W, H, W, H);
+  c.lineWidth = 1;
+  for (const [st, col] of [[minor, '#122435'], [major, '#1d3850']]) {
+    c.strokeStyle = col; c.beginPath();
+    for (let x = Math.floor(wx0/st)*st; x <= wx1; x += st) { const [px] = w2s(x, 0, W, H); c.moveTo(Math.round(px)+.5, 0); c.lineTo(Math.round(px)+.5, H); }
+    for (let y = Math.floor(wy0/st)*st; y <= wy1; y += st) { const [, py] = w2s(0, y, W, H); c.moveTo(0, Math.round(py)+.5); c.lineTo(W, Math.round(py)+.5); }
+    c.stroke();
+  }
+  // assi
+  c.strokeStyle = '#2b4a66'; c.beginPath();
+  const [ax, ay] = w2s(0, 0, W, H); c.moveTo(ax, 0); c.lineTo(ax, H); c.moveTo(0, ay); c.lineTo(W, ay); c.stroke();
+  // righelli
+  c.fillStyle = 'rgba(10,18,27,.9)'; c.fillRect(0, 0, W, 18); c.fillRect(0, 0, 34, H);
+  c.fillStyle = '#7d93a8'; c.font = '10px Segoe UI, sans-serif'; c.textAlign = 'center';
+  for (let x = Math.floor(wx0/major)*major; x <= wx1; x += major) { const [px] = w2s(x, 0, W, H); if (px > 34) c.fillText(+x.toFixed(1), px, 12); }
+  c.textAlign = 'right';
+  for (let y = Math.floor(wy0/major)*major; y <= wy1; y += major) { const [, py] = w2s(0, y, W, H); if (py > 18) c.fillText(+y.toFixed(1), 31, py + 3); }
+  if (!MODEL) return;
+  const G = MODEL.G;
+  const path = (loops) => { c.beginPath(); for (const l of loops) { const p = l.pts; for (let k = 0; k < p.length; k += 2) { const [sx, sy] = w2s(p[k], p[k+1], W, H); k ? c.lineTo(sx, sy) : c.moveTo(sx, sy); } c.closePath(); } };
+  for (const pc of MODEL.pieces) {
+    path(pc.L0); c.fillStyle = 'rgba(54,194,255,.10)'; c.fill('evenodd');
+    if (G.step) { path(pc.Lw); c.fillStyle = 'rgba(255,204,51,.10)'; c.fill('evenodd'); }
+    path(pc.Lfloor); c.fillStyle = 'rgba(11,22,34,.75)'; c.fill('evenodd');
+    c.lineWidth = 1.6; c.strokeStyle = '#ffffff'; path(pc.L0); c.stroke();
+    c.lineWidth = 1.1; c.strokeStyle = '#36c2ff'; path(pc.Lw); c.stroke();
+    if (G.step) { c.strokeStyle = '#ffcc33'; path(pc.Lfloor); c.stroke(); }
+    if (G.step || G.block) { c.setLineDash(G.block ? [] : [5, 4]); c.strokeStyle = '#3ddc84'; c.lineWidth = G.block ? 1.6 : 1.1; path(pc.Lface); c.stroke(); c.setLineDash([]); }
+    c.strokeStyle = '#ff5a5a'; c.lineWidth = 1.4;
+    for (const h of pc.holes) {
+      const [sx, sy] = w2s(h.x, h.y, W, H);
+      c.beginPath(); c.arc(sx, sy, h.d/2*V2.s, 0, 7); c.stroke();
+      c.beginPath(); c.moveTo(sx - 4, sy); c.lineTo(sx + 4, sy); c.moveTo(sx, sy - 4); c.lineTo(sx, sy + 4); c.stroke();
+    }
+    for (const h of pc.screws) {
+      const [sx, sy] = w2s(h.x, h.y, W, H);
+      c.strokeStyle = '#ff5a5a'; c.beginPath(); c.arc(sx, sy, h.rs*V2.s, 0, 7); c.stroke();
+      if (!MODEL.G.holesOnFace) { c.setLineDash([2, 2]); c.beginPath(); c.arc(sx, sy, (h.rs + 2.2)*V2.s, 0, 7); c.stroke(); c.setLineDash([]); }
+    }
+    for (const k of pc.keys) {
+      c.strokeStyle = '#ff5a5a'; c.lineWidth = 1.4; c.beginPath();
+      for (let q = 0; q < k.outline.length; q += 2) { const [sx, sy] = w2s(k.outline[q], k.outline[q+1], W, H); q ? c.lineTo(sx, sy) : c.moveTo(sx, sy); }
+      c.closePath(); c.stroke();
+      const [sx, sy] = w2s(k.x, k.y + k.L, W, H);
+      c.beginPath(); c.moveTo(sx - 5, sy); c.lineTo(sx + 5, sy); c.moveTo(sx, sy - 5); c.lineTo(sx, sy + 5); c.stroke();
+    }
+    // passaggi cavo
+    for (const nt of pc.notches) {
+      const xa = nt.x0, xb = nt.s > 0 ? pc.bb[3] + 1 : pc.bb[0] - 1;
+      const [ax_, ay_] = w2s(Math.min(xa, xb), nt.yc + nt.hw, W, H), [bx_, by_] = w2s(Math.max(xa, xb), nt.yc - nt.hw, W, H);
+      c.fillStyle = 'rgba(255,90,90,.25)'; c.fillRect(ax_, ay_, bx_ - ax_, by_ - ay_);
+      c.strokeStyle = '#ff5a5a'; c.lineWidth = 1; c.strokeRect(ax_, ay_, bx_ - ax_, by_ - ay_);
+    }
+    // tagli di divisione
+    if (pc.cuts && pc.cuts.length) {
+      c.save();
+      const [cx0, cy0] = w2s(pc.bb[0] - 2, pc.bb[4] + 2, W, H), [cx1, cy1] = w2s(pc.bb[3] + 2, pc.bb[1] - 2, W, H);
+      c.beginPath(); c.rect(cx0, cy0, cx1 - cx0, cy1 - cy0); c.clip();
+      c.strokeStyle = '#e05cff'; c.lineWidth = 1.6; c.setLineDash([6, 3]);
+      for (const ct of pc.cuts) { c.beginPath(); ct.xy.forEach(([x, y], k) => { const [sx, sy] = w2s(x, y, W, H); k ? c.lineTo(sx, sy) : c.moveTo(sx, sy); }); c.stroke(); }
+      c.restore();
+    }
+    // etichetta pezzo
+    if (MODEL.pieces.length > 1) {
+      const [sx, sy] = w2s((pc.bb[0] + pc.bb[3])/2, pc.bb[4], W, H);
+      c.fillStyle = pc.fits ? '#7d93a8' : '#ff5a5a'; c.textAlign = 'center'; c.font = '11px Segoe UI, sans-serif';
+      c.fillText(`${pc.name}  ${pc.sizeX.toFixed(1)}×${pc.sizeY.toFixed(1)}`, sx, sy - 8);
+    }
+  }
+  // quote complessive
+  const [x0, y0, x1, y1] = MODEL.bbox;
+  c.strokeStyle = '#ff9b2f'; c.fillStyle = '#ff9b2f'; c.lineWidth = 1; c.font = 'bold 12px Segoe UI, sans-serif';
+  const [p0x, p0y] = w2s(x0, y0, W, H), [p1x, p1y] = w2s(x1, y1, W, H);
+  const dimLine = (ax, ay, bx, by, txt, vert) => {
+    c.beginPath(); c.moveTo(ax, ay); c.lineTo(bx, by); c.stroke();
+    const ar = (x, y, dx, dy) => { c.beginPath(); c.moveTo(x, y); c.lineTo(x + dx*8 - dy*3, y + dy*8 + dx*3); c.lineTo(x + dx*8 + dy*3, y + dy*8 - dx*3); c.closePath(); c.fill(); };
+    const L = Math.hypot(bx - ax, by - ay) || 1, ux = (bx - ax)/L, uy = (by - ay)/L;
+    ar(ax, ay, ux, uy); ar(bx, by, -ux, -uy);
+    c.save(); c.translate((ax + bx)/2, (ay + by)/2); if (vert) c.rotate(-Math.PI/2);
+    c.textAlign = 'center'; const tw = c.measureText(txt).width + 8;
+    c.fillStyle = '#0b1622'; c.fillRect(-tw/2, -9, tw, 16); c.fillStyle = '#ff9b2f'; c.fillText(txt, 0, 4); c.restore();
+  };
+  const by = p0y + 34;
+  c.beginPath(); c.moveTo(p0x, p0y + 4); c.lineTo(p0x, by + 6); c.moveTo(p1x, p0y + 4); c.lineTo(p1x, by + 6); c.stroke();
+  dimLine(p0x, by, p1x, by, `${(x1 - x0).toFixed(1)} mm`);
+  const bx = p0x - 34;
+  c.beginPath(); c.moveTo(p0x - 4, p0y); c.lineTo(bx - 6, p0y); c.moveTo(p0x - 4, p1y); c.lineTo(bx - 6, p1y); c.stroke();
+  dimLine(bx, p0y, bx, p1y, `${(y1 - y0).toFixed(1)} mm`, true);
+  // cursore strumento foro
+  if (V2.tool === 'add' && V2.mx != null) {
+    c.strokeStyle = '#ff5a5a'; c.setLineDash([3, 3]);
+    c.beginPath(); c.arc(V2.mx, V2.my, (+P.holeD)/2*V2.s, 0, 7); c.stroke(); c.setLineDash([]);
+  }
+}
+(function setup2D() {
+  let drag = null;
+  cPlan.addEventListener('contextmenu', e => e.preventDefault());
+  cPlan.addEventListener('pointerdown', e => {
+    cPlan.setPointerCapture(e.pointerId);
+    const r = cPlan.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+    const [wx, wy] = s2w(px, py, r.width, r.height);
+    if (e.button === 0 && V2.tool === 'add') { manualHoles.push({x: wx, y: wy, d: +P.holeD, kind: 'cavo'}); saveLocal(); schedule(true); return; }
+    if ((e.button === 0 && V2.tool === 'del') || e.button === 2) {
+      let bi = -1, bd = Infinity;
+      manualHoles.forEach((h, i) => { const d = Math.hypot(h.x - wx, h.y - wy); if (d < bd) { bd = d; bi = i; } });
+      if (bi >= 0 && bd < Math.max(10, 20/V2.s)) { manualHoles.splice(bi, 1); saveLocal(); schedule(true); }
+      else if (e.button === 2 && P.holesAuto) msg('Per togliere i fori automatici disattiva “Posizione automatica” (sezione Fori).');
+      return;
+    }
+    drag = {x: e.clientX, y: e.clientY, cx: V2.cx, cy: V2.cy};
+  });
+  cPlan.addEventListener('pointermove', e => {
+    const r = cPlan.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+    const [wx, wy] = s2w(px, py, r.width, r.height);
+    document.getElementById('stXY').textContent = `X ${wx.toFixed(1)}  Y ${wy.toFixed(1)} mm`;
+    V2.mx = px; V2.my = py;
+    if (drag) { V2.cx = drag.cx - (e.clientX - drag.x)/V2.s; V2.cy = drag.cy + (e.clientY - drag.y)/V2.s; }
+    draw2D();
+  });
+  cPlan.addEventListener('pointerup', () => drag = null);
+  cPlan.addEventListener('wheel', e => {
+    e.preventDefault();
+    const r = cPlan.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+    const [wx, wy] = s2w(px, py, r.width, r.height);
+    V2.s *= Math.exp(-e.deltaY * 0.0015);
+    V2.s = Math.min(200, Math.max(0.05, V2.s));
+    const [wx2, wy2] = s2w(px, py, r.width, r.height);
+    V2.cx += wx - wx2; V2.cy += wy - wy2; draw2D();
+  }, {passive: false});
+  // pinch
+  const pts = new Map(); let pinch = null;
+  cPlan.addEventListener('touchstart', e => { if (e.touches.length === 2) { drag = null; const [a, b] = e.touches; pinch = {d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), s: V2.s}; } }, {passive: true});
+  cPlan.addEventListener('touchmove', e => { if (pinch && e.touches.length === 2) { const [a, b] = e.touches; V2.s = pinch.s * Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) / pinch.d; draw2D(); } }, {passive: true});
+  cPlan.addEventListener('touchend', () => pinch = null);
+})();
+
+/* =====================================================================
+   VISTA SEZIONE (profilo quotato)
+   ===================================================================== */
+const cSect = document.getElementById('cSect');
+function drawSect() {
+  const dpr = resizeCanvas(cSect), c = cSect.getContext('2d');
+  const W = cSect.width/dpr, H = cSect.height/dpr;
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  c.fillStyle = '#0b1622'; c.fillRect(0, 0, W, H);
+  const G = geomParams();
+  const ledW = +P.ledW;
+  if (G.block) {
+    // sezione blocco: coperchio, pareti, frontale con apertura, lettera trasparente con flangia
+    const inner = 40, gp = +P.gap, totW = 2*G.w + inner + 30, letW = 18, z0 = -G.B, z1 = G.H + G.Pp;
+    const sc = Math.min((W - 560) / totW, (H - 170) / (z1 - z0));
+    const X = (x) => 40 + 160 + (x)*sc, Y = (z) => H - 50 - (z - z0)*sc;
+    const rect = (x0, a, x1, b, fill, st) => { c.fillStyle = fill; c.fillRect(X(x0), Y(b), (x1 - x0)*sc, (b - a)*sc); c.strokeStyle = st; c.strokeRect(X(x0), Y(b), (x1 - x0)*sc, (b - a)*sc); };
+    const hatch = '#2d4d6b', edge = '#9fb6cc', lx0 = totW/2 - letW/2, lx1 = totW/2 + letW/2;
+    rect(0, -G.B, totW, 0, '#24384d', edge);
+    rect(0, 0, G.w, G.H, hatch, edge); rect(totW - G.w, 0, totW, G.H, hatch, edge);
+    rect(G.w, G.H - G.T, lx0 - gp, G.H, hatch, edge); rect(lx1 + gp, G.H - G.T, totW - G.w, G.H, hatch, edge);
+    c.globalAlpha = .6;
+    rect(lx0, G.faceZ, lx1, G.faceZ + 1.2 + G.T + G.Pp, '#bff5d6', '#3ddc84');
+    rect(lx0 - gp - 1.5, G.faceZ, lx0, G.faceZ + 1.2, '#bff5d6', '#3ddc84'); rect(lx1, G.faceZ, lx1 + gp + 1.5, G.faceZ + 1.2, '#bff5d6', '#3ddc84');
+    c.globalAlpha = 1;
+    rect(totW/2 - ledW/2, 0, totW/2 + ledW/2, 2.5, '#ffd84d', '#ffcc33');
+    c.fillStyle = '#ff9b2f'; c.font = '12px Segoe UI, sans-serif'; c.textAlign = 'left';
+    const lab = (t, x, z) => { c.fillText(t, X(x), Y(z)); };
+    lab(`Blocco profondo ${G.H} mm, pareti ${G.w} mm`, totW + 4, G.H/2);
+    lab(`Frontale ${G.T} mm con apertura a forma di lettera`, totW + 4, G.H + 2);
+    lab(`Lettera trasparente: sporge ${G.Pp} mm, flangia 1,2 mm`, totW + 4, G.H + G.Pp);
+    lab(`Coperchio posteriore ${G.B} mm (LED, fori, asole)`, totW + 4, -G.B);
+    c.fillStyle = '#7d93a8';
+    c.fillText('Sezione di un blocco (schema). Il blocco si stampa a faccia in giù, la lettera in PLA trasparente sulla flangia.', 14, 24);
+    c.fillText('Montaggio: inserisci la lettera da dietro, metti i LED sul coperchio e chiudi il blocco (colla o viti).', 14, 41);
+    return;
+  }
+  const cav = Math.max(ledW + 6, 16);           // larghezza interna disegnata
+  const totW = 2*(G.w + (G.step ? G.s : 0)) + cav;
+  const totH = G.H + (G.step ? Math.max(0, G.F - G.L) : G.F) + 2;
+  const sc = Math.min((W - 420) / totW, (H - 190) / totH);
+  const X = (x) => W/2 - 40 + (x - totW/2)*sc, Y = (z) => H - 50 - z*sc;
+  const rect = (x0, z0, x1, z1, fill, stroke) => { c.fillStyle = fill; c.fillRect(X(x0), Y(z1), (x1 - x0)*sc, (z1 - z0)*sc); if (stroke) { c.strokeStyle = stroke; c.lineWidth = 1; c.strokeRect(X(x0), Y(z1), (x1 - x0)*sc, (z1 - z0)*sc); } };
+  const hatch = '#2d4d6b', edge = '#9fb6cc';
+  const inner = G.w + (G.step ? G.s : 0);
+  // scocca
+  rect(0, 0, totW, G.B, hatch, edge);
+  rect(0, 0, G.w, G.H, hatch, edge); rect(totW - G.w, 0, totW, G.H, hatch, edge);
+  if (G.step) { rect(G.w, 0, inner, G.H - G.L, hatch, edge); rect(totW - inner, 0, totW - G.w, G.H - G.L, hatch, edge); }
+  // faccia
+  const fx0 = G.step ? G.w + G.gap : 0, fx1 = G.step ? totW - G.w - G.gap : totW;
+  c.globalAlpha = .55; rect(fx0, G.faceZ, fx1, G.faceZ + G.F, '#bff5d6', '#3ddc84'); c.globalAlpha = 1;
+  // LED
+  const lx = totW/2 - ledW/2;
+  rect(lx, G.B, lx + ledW, G.B + 2.5, '#ffd84d', '#ffcc33');
+  c.fillStyle = 'rgba(255,216,77,.08)';
+  c.beginPath(); c.moveTo(X(lx), Y(G.B + 2.5)); c.lineTo(X(lx + ledW), Y(G.B + 2.5)); c.lineTo(X(fx1), Y(G.faceZ)); c.lineTo(X(fx0), Y(G.faceZ)); c.closePath(); c.fill();
+  // quote
+  c.strokeStyle = '#ff9b2f'; c.fillStyle = '#ff9b2f'; c.font = '12px Segoe UI, sans-serif'; c.lineWidth = 1;
+  const arrow = (x, y, dx, dy) => { c.beginPath(); c.moveTo(x, y); c.lineTo(x + dx*7 - dy*3, y + dy*7 + dx*3); c.lineTo(x + dx*7 + dy*3, y + dy*7 - dx*3); c.closePath(); c.fill(); };
+  const dimV = (x, z0, z1, txt, side) => {
+    const px = X(x), a = Y(z0), b = Y(z1);
+    c.beginPath(); c.moveTo(px, a); c.lineTo(px, b); c.stroke(); arrow(px, a, 0, -1); arrow(px, b, 0, 1);
+    c.textAlign = side < 0 ? 'right' : 'left'; c.fillText(txt, px + side*6, (a + b)/2 + 4);
+  };
+  const dimH = (x0, x1, z, txt, up) => {
+    const py = Y(z), a = X(x0), b = X(x1);
+    c.beginPath(); c.moveTo(a, py); c.lineTo(b, py); c.stroke(); arrow(a, py, 1, 0); arrow(b, py, -1, 0);
+    c.textAlign = 'center'; c.fillText(txt, (a + b)/2, py + (up ? -6 : 15));
+  };
+  const ext = (x, z0, z1) => { c.save(); c.strokeStyle = 'rgba(255,155,47,.35)'; c.setLineDash([2, 3]); c.beginPath(); c.moveTo(X(x), Y(z0)); c.lineTo(X(x), Y(z1)); c.stroke(); c.restore(); };
+  const dimVp = (px, z0, z1, txt, side) => {
+    const a = Y(z0), b = Y(z1);
+    c.beginPath(); c.moveTo(px, a); c.lineTo(px, b); c.stroke(); arrow(px, a, 0, -1); arrow(px, b, 0, 1);
+    c.textAlign = side < 0 ? 'right' : 'left'; c.fillText(txt, px + side*6, (a + b)/2 + 4);
+  };
+  const xr = X(totW);
+  dimVp(X(0) - 40, 0, G.H, `Profondità ${G.H} mm`, -1);
+  dimVp(xr + 30, 0, G.B, `Fondo ${G.B} mm`, 1);
+  if (G.step) dimVp(xr + 30, G.H - G.L, G.H, `Scalino ${G.L} mm`, 1);
+  dimVp(xr + 150, G.faceZ, G.faceZ + G.F, `Faccia ${G.F} mm`, 1);
+  const top = Y(Math.max(G.H, G.faceZ + G.F));
+  const dimHp = (x0, x1, py, txt) => {
+    const a = X(x0), b = X(x1);
+    c.beginPath(); c.moveTo(a, py); c.lineTo(b, py); c.stroke(); arrow(a, py, 1, 0); arrow(b, py, -1, 0);
+    c.textAlign = 'left'; c.fillText(txt, Math.max(a, b) + 8, py + 4);
+  };
+  const extp = (x, z, py) => { c.save(); c.strokeStyle = 'rgba(255,155,47,.35)'; c.setLineDash([2, 3]); c.beginPath(); c.moveTo(X(x), Y(z)); c.lineTo(X(x), py); c.stroke(); c.restore(); };
+  extp(0, G.H, top - 44); extp(G.w, G.H, top - 44);
+  dimHp(0, G.w, top - 18, `Parete ${G.w} mm`);
+  if (G.step) { extp(inner, G.H - G.L, top - 44); dimHp(G.w, inner, top - 38, `Scalino ${G.s} mm`); }
+  dimH(lx, lx + ledW, G.B - 14/sc, `LED ${ledW} mm`, false);
+  dimH(inner, totW - inner, G.H * 0.55, `Canale (in questo esempio)`, true);
+  c.fillStyle = '#7d93a8'; c.textAlign = 'left'; c.font = '12px Segoe UI, sans-serif';
+  const lines = [
+    'Sezione trasversale di un tratto di lettera (scala reale, larghezza del canale indicativa).',
+    G.step ? `Faccia ${G.F} mm su scalino profondo ${G.L} mm → ${G.F > G.L ? 'sporge ' + (G.F - G.L).toFixed(1) + ' mm' : G.F < G.L ? 'rientra ' + (G.L - G.F).toFixed(1) + ' mm' : 'a filo'} · gioco ${G.gap} mm per lato`
+           : `Senza scalino: la faccia copre tutto il bordo (coperchio da incollare sopra).`,
+    `Distanza LED → faccia: ${(G.faceZ - G.B - 2.5).toFixed(1)} mm (più è alta, più la luce è uniforme).`
+  ];
+  lines.forEach((t, i) => c.fillText(t, 14, 24 + i*17));
+  if (G.errs.length) { c.fillStyle = '#ff5a5a'; c.fillText(G.errs[0], 14, 24 + 3*17); }
+}
+
+/* =====================================================================
+   VISTA 3D (WebGL)
+   ===================================================================== */
+const c3 = document.getElementById('c3d');
+const GL = {gl: null, prog: null, bufs: [], yaw: -1.25, pitch: 0.85, dist: 400, tx: 0, ty: 0, tz: 0, explode: false, showFace: true, lit: false, showWall: false};
+function initGL() {
+  const gl = c3.getContext('webgl', {antialias: true});
+  if (!gl) return false;
+  const vs = `attribute vec3 p;attribute vec3 n;uniform mat4 m;uniform vec3 off;uniform float sc;uniform vec2 ctr;varying vec3 vn;void main(){vn=n;vec3 q=p;q.xy=ctr+(q.xy-ctr)*sc;gl_Position=m*vec4(q+off,1.0);}`;
+  const fs = `precision mediump float;varying vec3 vn;uniform vec4 col;uniform float lit;void main(){vec3 L=normalize(vec3(0.35,-0.55,0.75));vec3 L2=normalize(vec3(-0.6,0.4,-0.5));vec3 nn=normalize(vn);float d=max(dot(nn,L),0.0)*0.75+max(dot(nn,L2),0.0)*0.35;vec3 c=mix(col.rgb,col.rgb*(0.3+0.75*d),lit);gl_FragColor=vec4(c,col.a);}`;
+  const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); return o; };
+  const pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(pr);
+  GL.gl = gl; GL.prog = pr;
+  return true;
+}
+function meshToBuf(mesh, dz) {
+  const gl = GL.gl, v = mesh.v, t = mesh.t;
+  const a = new Float32Array(t.length * 6);
+  for (let k = 0; k < t.length; k += 3) {
+    const i0 = 3*t[k], i1 = 3*t[k+1], i2 = 3*t[k+2];
+    const ux = v[i1] - v[i0], uy = v[i1+1] - v[i0+1], uz = v[i1+2] - v[i0+2];
+    const wx = v[i2] - v[i0], wy = v[i2+1] - v[i0+1], wz = v[i2+2] - v[i0+2];
+    let nx = uy*wz - uz*wy, ny = uz*wx - ux*wz, nz = ux*wy - uy*wx; const l = Math.hypot(nx, ny, nz) || 1; nx /= l; ny /= l; nz /= l;
+    const ids = [i0, i1, i2];
+    for (let q = 0; q < 3; q++) { const i = ids[q], o = (k + q) * 6; a[o] = v[i]; a[o+1] = v[i+1]; a[o+2] = v[i+2] + dz; a[o+3] = nx; a[o+4] = ny; a[o+5] = nz; }
+  }
+  const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, a, gl.STATIC_DRAW);
+  return {b, n: t.length};
+}
+function wallZ() {
+  if (!MODEL) return 0;
+  const G = MODEL.G, gapS = (mountMode() === 'screws' && P.standoffs) ? +P.postL : 0;
+  return P.light === 'front' ? -gapS - 0.4 - (G.block ? G.B : 0) : G.faceZ + G.F + gapS + 0.4;
+}
+function upload3D() {
+  if (!GL.gl && !initGL()) return;
+  const gl = GL.gl;
+  GL.bufs.forEach(x => gl.deleteBuffer(x.b)); GL.bufs = [];
+  if (!MODEL) return;
+  const G = MODEL.G;
+  const dz = GL.explode ? G.H*0.8 + 10 : 0;
+  for (const pc of MODEL.pieces) for (const q of pc.parts) {
+    GL.bufs.push(Object.assign(meshToBuf(q.housing, 0), {kind: 'h'}));
+    GL.bufs.push(Object.assign(meshToBuf(q.face, G.faceZ + dz), {kind: 'f'}));
+    if (q.lid) GL.bufs.push(Object.assign(meshToBuf(q.lid, -G.B - (GL.explode ? 25 : 0)), {kind: 'h'}));
+  }
+  const S = +P.postL;
+  const back0 = G.block ? -G.B - (GL.explode ? 25 : 0) : 0;
+  for (const t of MODEL.tubes) GL.bufs.push(Object.assign(meshToBuf(t, P.light === 'front' ? back0 - S - (GL.explode ? 15 : 0) : G.faceZ + G.F + dz + (GL.explode ? 15 : 0)), {kind: 't'}));
+  // griglia piatto e muro
+  const [x0, y0, x1, y1] = MODEL.bbox3, st = niceStepFor(Math.max(x1 - x0, y1 - y0) / 12);
+  const g = [];
+  const gx0 = Math.floor((x0 - 20)/st)*st, gx1 = Math.ceil((x1 + 20)/st)*st, gy0 = Math.floor((y0 - 20)/st)*st, gy1 = Math.ceil((y1 + 20)/st)*st;
+  for (let x = gx0; x <= gx1; x += st) g.push(x, gy0, -0.05, 0, 0, 1, x, gy1, -0.05, 0, 0, 1);
+  for (let y = gy0; y <= gy1; y += st) g.push(gx0, y, -0.05, 0, 0, 1, gx1, y, -0.05, 0, 0, 1);
+  let b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(g), gl.STATIC_DRAW);
+  GL.bufs.push({b, n: g.length/6, kind: 'g'});
+  const mx = Math.max(x1 - x0, y1 - y0) * 0.35 + 60, wz = wallZ(), nz = P.light === 'front' ? 1 : -1;
+  const wq = [x0 - mx, y0 - mx, x1 + mx, y0 - mx, x1 + mx, y1 + mx, x0 - mx, y0 - mx, x1 + mx, y1 + mx, x0 - mx, y1 + mx];
+  const wa = []; for (let k = 0; k < wq.length; k += 2) wa.push(wq[k], wq[k+1], wz, 0, 0, nz);
+  b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(wa), gl.STATIC_DRAW);
+  GL.bufs.push({b, n: 6, kind: 'w'});
+}
+function niceStepFor(v) { const c = [1, 2, 5, 10, 20, 50, 100, 200]; for (const x of c) if (x >= v) return x; return 500; }
+function fit3D() {
+  if (!MODEL) return;
+  const [x0, y0, x1, y1] = MODEL.bbox3;
+  GL.tx = (x0 + x1)/2; GL.ty = (y0 + y1)/2; GL.tz = MODEL.G.H/2;
+  GL.dist = Math.max(x1 - x0, y1 - y0, MODEL.G.H) * 1.5 + 40;
+}
+function setView(v) {
+  if (!MODEL) return;
+  fit3D();
+  const frontUp = P.light === 'front';
+  // dall'alto: yaw -90° (alto = +y); dal basso: yaw +90° così l'alto resta +y
+  const top = {yaw: -Math.PI/2, pitch: 1.565}, bottom = {yaw: Math.PI/2, pitch: -1.565};
+  const vw = v === 'front' ? (frontUp ? top : bottom) : v === 'back' ? (frontUp ? bottom : top) : (frontUp ? {yaw: -1.25, pitch: 0.85} : {yaw: 1.25, pitch: -0.85});
+  GL.yaw = vw.yaw; GL.pitch = vw.pitch; if (v !== 'iso') GL.dist *= 0.85;
+  draw3D();
+}
+function mat4mul(a, b) { const r = new Float32Array(16); for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) { let s = 0; for (let k = 0; k < 4; k++) s += a[i + 4*k]*b[k + 4*j]; r[i + 4*j] = s; } return r; }
+function draw3D() {
+  if (!GL.gl && !initGL()) return;
+  const gl = GL.gl; resizeCanvas(c3);
+  gl.viewport(0, 0, c3.width, c3.height);
+  const lit = GL.lit;
+  if (lit) gl.clearColor(0.02, 0.025, 0.035, 1); else gl.clearColor(0.043, 0.086, 0.133, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  if (!MODEL) return;
+  const cp = Math.cos(GL.pitch), e = [GL.tx + GL.dist*cp*Math.cos(GL.yaw), GL.ty + GL.dist*cp*Math.sin(GL.yaw), GL.tz + GL.dist*Math.sin(GL.pitch)];
+  const t = [GL.tx, GL.ty, GL.tz], up = [0, 0, 1];
+  const sub = (a, b) => [a[0]-b[0], a[1]-b[1], a[2]-b[2]], nrm = (a) => { const l = Math.hypot(...a) || 1; return a.map(x => x/l); };
+  const cross = (a, b) => [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]], dot = (a, b) => a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+  const z = nrm(sub(e, t)), x = nrm(cross(up, z)), y = cross(z, x);
+  const Vm = new Float32Array([x[0], y[0], z[0], 0, x[1], y[1], z[1], 0, x[2], y[2], z[2], 0, -dot(x, e), -dot(y, e), -dot(z, e), 1]);
+  const asp = c3.width / c3.height, f = 1/Math.tan(0.35), n = GL.dist/100, fr = GL.dist*20;
+  const Pm = new Float32Array([f/asp, 0, 0, 0, 0, f, 0, 0, 0, 0, (fr + n)/(n - fr), -1, 0, 0, 2*fr*n/(n - fr), 0]);
+  const M = mat4mul(Pm, Vm);
+  gl.useProgram(GL.prog);
+  const U = (k) => gl.getUniformLocation(GL.prog, k);
+  gl.uniformMatrix4fv(U('m'), false, M);
+  const lp = gl.getAttribLocation(GL.prog, 'p'), ln = gl.getAttribLocation(GL.prog, 'n');
+  const uc = U('col'), ul = U('lit'), uo = U('off'), us = U('sc'), uct = U('ctr');
+  gl.uniform3f(uo, 0, 0, 0); gl.uniform1f(us, 1); gl.uniform2f(uct, 0, 0);
+  gl.enable(gl.DEPTH_TEST);
+  const bind = (b) => { gl.bindBuffer(gl.ARRAY_BUFFER, b.b); gl.enableVertexAttribArray(lp); gl.vertexAttribPointer(lp, 3, gl.FLOAT, false, 24, 0); gl.enableVertexAttribArray(ln); gl.vertexAttribPointer(ln, 3, gl.FLOAT, false, 24, 12); };
+  const lc = ($('litCol').value || '1,0.86,0.62').split(',').map(Number);
+  const opaqueFront = P.light === 'front';
+  const hcol = lit ? (opaqueFront ? [0.06, 0.065, 0.075, 1] : [0.1, 0.1, 0.11, 1]) : (opaqueFront ? [0.17, 0.19, 0.22, 1] : [0.85, 0.85, 0.88, 1]);
+  const draw = (kind, col, l) => { for (const b of GL.bufs) if (b.kind === kind) { bind(b); gl.uniform4f(uc, ...col); gl.uniform1f(ul, l); gl.drawArrays(kind === 'g' ? gl.LINES : gl.TRIANGLES, 0, b.n); } };
+  if (!GL.showWall) draw('g', lit ? [0.06, 0.09, 0.12, 1] : [0.14, 0.24, 0.33, 1], 0);
+  if (GL.showWall) draw('w', lit ? [0.13, 0.13, 0.14, 1] : [0.78, 0.77, 0.74, 1], 1);
+  // "fronte + retro": nel modo acceso il fondo è traslucido e si illumina
+  if (lit && P.light === 'both') draw('h', [lc[0]*0.75, lc[1]*0.75, lc[2]*0.75, 1], 0); else draw('h', hcol, 1);
+  draw('t', lit ? [0.2, 0.2, 0.22, 1] : [0.55, 0.6, 0.66, 1], 1);
+  gl.enable(gl.BLEND); gl.depthMask(false);
+  // alone sul muro (luce retro accesa)
+  if (lit && GL.showWall && P.light !== 'front') {
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+    const [bx0, by0, bx1, by1] = MODEL.bbox3, ctr = [(bx0 + bx1)/2, (by0 + by1)/2];
+    const span = Math.max(bx1 - bx0, by1 - by0);
+    const shift = wallZ() - MODEL.G.faceZ - (GL.explode ? MODEL.G.H*0.8 + 10 : 0) - 0.2;
+    for (let r = 1; r <= 6; r++) for (let a = 0; a < 8; a++) {
+      const rr = r * 2.2, ang = a*Math.PI/4;
+      gl.uniform3f(uo, Math.cos(ang)*rr, Math.sin(ang)*rr, shift);
+      gl.uniform1f(us, 1 + r*0.004); gl.uniform2f(uct, ...ctr);
+      for (const b of GL.bufs) if (b.kind === 'f') { bind(b); gl.uniform4f(uc, lc[0], lc[1], lc[2], 0.07); gl.uniform1f(ul, 0); gl.drawArrays(gl.TRIANGLES, 0, b.n); }
+    }
+    gl.uniform3f(uo, 0, 0, 0); gl.uniform1f(us, 1); gl.uniform2f(uct, 0, 0);
+  }
+  if (GL.showFace) {
+    if (lit && P.light !== 'back') { gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); draw('f', [Math.min(1, lc[0]*1.05), Math.min(1, lc[1]*1.05), Math.min(1, lc[2]*1.05), 0.97], 0); }
+    else if (lit) { gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); draw('f', [lc[0]*0.5, lc[1]*0.5, lc[2]*0.5, 0.8], 0); }
+    else { gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); draw('f', [1.0, 0.93, 0.72, 0.62], 1); }
+  }
+  gl.depthMask(true); gl.disable(gl.BLEND);
+}
+(function setup3D() {
+  let drag = null, pinch = null;
+  c3.addEventListener('contextmenu', e => e.preventDefault());
+  c3.addEventListener('pointerdown', e => { c3.setPointerCapture(e.pointerId); drag = {x: e.clientX, y: e.clientY, pan: e.button === 2 || e.shiftKey, yaw: GL.yaw, pitch: GL.pitch, tx: GL.tx, ty: GL.ty, tz: GL.tz}; });
+  c3.addEventListener('pointermove', e => {
+    if (!drag || pinch) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (drag.pan) {
+      const s = GL.dist / 700;
+      const sx = -Math.sin(GL.yaw), sy = Math.cos(GL.yaw);
+      GL.tx = drag.tx - dx*s*sx; GL.ty = drag.ty - dx*s*sy; GL.tz = drag.tz + dy*s;
+    } else { GL.yaw = drag.yaw - dx*0.008; GL.pitch = Math.max(-1.565, Math.min(1.565, drag.pitch + dy*0.008)); }
+    draw3D();
+  });
+  c3.addEventListener('pointerup', () => drag = null);
+  c3.addEventListener('wheel', e => { e.preventDefault(); GL.dist *= Math.exp(e.deltaY*0.0012); draw3D(); }, {passive: false});
+  c3.addEventListener('touchstart', e => { if (e.touches.length === 2) { const [a, b] = e.touches; pinch = {d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), dist: GL.dist}; } }, {passive: true});
+  c3.addEventListener('touchmove', e => { if (pinch && e.touches.length === 2) { const [a, b] = e.touches; GL.dist = pinch.dist * pinch.d / Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); draw3D(); } }, {passive: true});
+  c3.addEventListener('touchend', () => { pinch = null; });
+})();
+
+/* =====================================================================
+   PANNELLO INFO
+   ===================================================================== */
+function renderInfo() {
+  const el = document.getElementById('infoBody');
+  if (!MODEL) { el.innerHTML = ''; return; }
+  const G = MODEL.G, dens = 1.24;
+  let totH = 0, totF = 0, totP = 0;
+  let html = '';
+  const [x0, y0, x1, y1] = MODEL.bbox;
+  const fname = P.light === 'front' ? 'Faccia' : 'Pannello post.';
+  html += `<div class="card"><h4>Insegna completa</h4>
+    <div class="kv">Ingombro<b>${(x1 - x0).toFixed(1)} × ${(y1 - y0).toFixed(1)} × ${(G.H + (G.step ? Math.max(0, G.F - G.L) : G.F)).toFixed(1)} mm</b></div>
+    <div class="kv">Pezzi da stampare<b>${MODEL.pieces.reduce((s, p) => s + p.parts.length, 0)} scocche + ${MODEL.pieces.reduce((s, p) => s + p.parts.length, 0)} ${fname.toLowerCase()}${MODEL.tubes.length ? ' + ' + MODEL.tubes.length + ' distanziali' : ''}</b></div>`;
+  for (const pc of MODEL.pieces) { totH += pc.volH; totF += pc.volF; totP += pc.perim; }
+  html += `<div class="kv">PLA scocche (100%)<b>${(totH/1000*dens).toFixed(0)} g</b></div>
+    <div class="kv">PLA trasparente (100%)<b>${(totF/1000*dens).toFixed(0)} g</b></div>
+    <div class="kv">Perimetro interno totale<b>${(totP/10).toFixed(0)} cm</b></div>
+    <div class="hint">Il peso è a riempimento pieno: con le pareti sottili è molto vicino al reale.</div>`;
+  if (MODEL.warns.length) html += MODEL.warns.map(w => `<div class="w">⚠ ${w}</div>`).join('');
+  html += `</div>`;
+  for (const pc of MODEL.pieces) {
+    const ok = pc.channel >= +P.ledW + 1;
+    const partsTxt = pc.parts.length > 1 ? pc.parts.map(q => `<div class="kv">· parte ${q.name}<b style="color:${q.fits ? 'inherit' : 'var(--bad)'}">${q.sizeX.toFixed(0)}×${q.sizeY.toFixed(0)} mm</b></div>`).join('') : '';
+    html += `<div class="card"><h4>${pc.name}<span style="color:${pc.fits ? 'var(--ok)' : 'var(--bad)'}">${pc.parts.length > 1 ? pc.parts.length + ' parti' : (pc.fits ? 'ok piatto' : 'troppo grande')}</span></h4>
+      <div class="kv">Dimensioni<b>${pc.sizeX.toFixed(1)} × ${pc.sizeY.toFixed(1)} mm</b></div>
+      <div class="kv">Canale utile max<b>${pc.channel.toFixed(1)} mm</b></div>
+      <div class="kv">Perimetro interno<b>${(pc.perim/10).toFixed(1)} cm</b></div>
+      <div class="kv">Scocca / ${fname.toLowerCase()}<b>${(pc.volH/1000*dens).toFixed(1)} g / ${(pc.volF/1000*dens).toFixed(1)} g</b></div>
+      <div class="kv">Fori cavo / viti<b>${pc.holes.length ? pc.holes.map(h => 'Ø' + h.d).join(', ') : '—'} / ${pc.screws.length ? pc.screws.length + '×Ø' + P.fixD : pc.keys.length ? pc.keys.length + ' asole' : '—'}</b></div>
+      <div class="kv">Passaggi cavo<b>${pc.notches.length || '—'}</b></div>
+      ${partsTxt}
+      ${ok ? '' : `<div class="w">Canale più stretto del LED (${P.ledW} mm): riduci parete/scalino o ingrandisci.</div>`}
+      ${pc.fits ? '' : `<div class="e">Non entra nel piatto ${P.bedX}×${P.bedY}: attiva “Dividi automaticamente” o riduci l'altezza.</div>`}
+    </div>`;
+  }
+  el.innerHTML = html;
+}
+
+/* =====================================================================
+   ESPORTAZIONE
+   ===================================================================== */
+function stlBinary(meshes) {
+  let n = 0; for (const m of meshes) n += m.t.length / 3;
+  const buf = new ArrayBuffer(84 + n*50), dv = new DataView(buf);
+  const hdr = 'Colors LED Studio'; for (let i = 0; i < hdr.length; i++) dv.setUint8(i, hdr.charCodeAt(i));
+  dv.setUint32(80, n, true);
+  let o = 84;
+  for (const m of meshes) {
+    const v = m.v, t = m.t, dz = m._dz || 0, dx = m._dx || 0, dy = m._dy || 0, fl = m.printFlipH;
+    const Z = (i) => fl != null ? fl - v[i+2] : v[i+2] + dz;
+    for (let k = 0; k < t.length; k += 3) {
+      const a = 3*t[k], b = fl != null ? 3*t[k+2] : 3*t[k+1], c = fl != null ? 3*t[k+1] : 3*t[k+2];
+      const ux = v[b]-v[a], uy = v[b+1]-v[a+1], uz = Z(b)-Z(a), wx = v[c]-v[a], wy = v[c+1]-v[a+1], wz = Z(c)-Z(a);
+      let nx = uy*wz - uz*wy, ny = uz*wx - ux*wz, nz = ux*wy - uy*wx; const l = Math.hypot(nx, ny, nz) || 1;
+      dv.setFloat32(o, nx/l, true); dv.setFloat32(o+4, ny/l, true); dv.setFloat32(o+8, nz/l, true); o += 12;
+      for (const i of [a, b, c]) { dv.setFloat32(o, v[i] + dx, true); dv.setFloat32(o+4, v[i+1] + dy, true); dv.setFloat32(o+8, Z(i), true); o += 12; }
+      dv.setUint16(o, 0, true); o += 2;
+    }
+  }
+  return new Uint8Array(buf);
+}
+const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(u) { let c = 0xFFFFFFFF; for (let i = 0; i < u.length; i++) c = CRC[(c ^ u[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipStore(files) {
+  const enc = new TextEncoder(), parts = [], central = [];
+  let off = 0;
+  for (const f of files) {
+    const name = enc.encode(f.name), data = typeof f.data === 'string' ? enc.encode(f.data) : f.data, crc = crc32(data);
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+    h.setUint16(10, 0, true); h.setUint16(12, 0x21, true); h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true);
+    h.setUint16(26, name.length, true); h.setUint16(28, 0, true);
+    parts.push(new Uint8Array(h.buffer), name, data);
+    const cd = new DataView(new ArrayBuffer(46));
+    cd.setUint32(0, 0x02014b50, true); cd.setUint16(4, 20, true); cd.setUint16(6, 20, true); cd.setUint16(8, 0x0800, true); cd.setUint16(10, 0, true);
+    cd.setUint16(12, 0, true); cd.setUint16(14, 0x21, true); cd.setUint32(16, crc, true); cd.setUint32(20, data.length, true); cd.setUint32(24, data.length, true);
+    cd.setUint16(28, name.length, true); cd.setUint32(42, off, true);
+    central.push(new Uint8Array(cd.buffer), name);
+    off += 30 + name.length + data.length;
+  }
+  const cdSize = central.reduce((s, x) => s + x.length, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true); end.setUint32(12, cdSize, true); end.setUint32(16, off, true);
+  return new Blob([...parts, ...central, new Uint8Array(end.buffer)], {type: 'application/zip'});
+}
+function download(blob, name) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+}
+function baseName() {
+  const t = P.src === 'text' ? P.text : (imgName || 'logo');
+  return ('LED_' + t.replace(/\.[a-z0-9]+$/i, '').replace(/[^a-zA-Z0-9]+/g, '_').slice(0, 24)).replace(/_+$/, '') || 'LED';
+}
+// dispone le facce sotto alle scocche per il piatto
+function layoutForExport() {
+  const [, y0, , y1] = MODEL.bbox;
+  const shift = -(y1 - y0) - 15;
+  return MODEL.pieces.flatMap(pc => pc.parts).map(q => ({h: q.housing, f: Object.assign(Object.create(Mesh.prototype), q.face, {_dy: shift}), l: q.lid ? Object.assign(Object.create(Mesh.prototype), q.lid, {_dy: 2*shift}) : null}));
+}
+function tubesForExport() {
+  const [x0, y0, , y1] = [MODEL.bbox[0], MODEL.bbox[1], 0, MODEL.bbox[3]];
+  const D = +P.postD + 6;
+  return MODEL.tubes.map((t, k) => Object.assign(Object.create(Mesh.prototype), t, {_dx: x0 + D*k - t.at.x, _dy: y0 - 2*(y1 - y0) - 40 - t.at.y}));
+}
+function model3MF(objs) {
+  const xml = ['<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="it-IT" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n<metadata name="Application">Colors LED Studio</metadata>\n<resources>\n'];
+  objs.forEach((m, k) => {
+    xml.push(`<object id="${k+1}" name="${m.name}" type="model"><mesh><vertices>`);
+    const v = m.v, dy = m._dy || 0, dx = m._dx || 0, fl = m.printFlipH, parts = [];
+    for (let i = 0; i < v.length; i += 3) parts.push(`<vertex x="${(v[i] + dx).toFixed(4)}" y="${(v[i+1] + dy).toFixed(4)}" z="${(fl != null ? fl - v[i+2] : v[i+2]).toFixed(4)}"/>`);
+    xml.push(parts.join(''), '</vertices><triangles>');
+    const t = m.t, tp = [];
+    for (let i = 0; i < t.length; i += 3) tp.push(fl != null ? `<triangle v1="${t[i]}" v2="${t[i+2]}" v3="${t[i+1]}"/>` : `<triangle v1="${t[i]}" v2="${t[i+1]}" v3="${t[i+2]}"/>`);
+    xml.push(tp.join(''), '</triangles></mesh></object>\n');
+  });
+  xml.push('</resources>\n<build>');
+  objs.forEach((m, k) => xml.push(`<item objectid="${k+1}"/>`));
+  xml.push('</build>\n</model>');
+  return xml.join('');
+}
+// ---- dima di foratura 1:1 (vista dal davanti, come si appoggia al muro) ----
+function dimaMarks() {
+  const marks = [];
+  for (const pc of MODEL.pieces) {
+    for (const s of pc.screws) marks.push({x: s.x, y: s.y, d: s.d, t: 'vite Ø' + s.d, kind: 'vite'});
+    for (const k of pc.keys) marks.push({x: k.x, y: k.y + k.L, d: +P.fixD, t: 'vite asola Ø' + P.fixD, kind: 'vite'});
+    for (const h of pc.holes) marks.push({x: h.x, y: h.y, d: h.d, t: 'cavo Ø' + h.d, kind: 'cavo'});
+  }
+  return marks;
+}
+function exportDima(fmt) {
+  if (!MODEL) return msg('Niente da esportare');
+  const marks = dimaMarks(), bn = baseName();
+  if (!marks.some(m => m.kind === 'vite')) msg('Attenzione: nessuna vite di fissaggio (scegli un sistema in “Fori, cavi e fissaggio”)');
+  const [x0, y0, x1, y1] = MODEL.bbox, m = 25, W = x1 - x0 + 2*m, H = y1 - y0 + 2*m + 30;
+  const X = (x) => (x - x0 + m), Y = (y) => (y1 - y + m);
+  if (fmt === 'dxf') {
+    let d = '0\nSECTION\n2\nENTITIES\n';
+    for (const pc of MODEL.pieces) for (const l of pc.L0) {
+      d += '0\nPOLYLINE\n8\nCONTORNI\n66\n1\n70\n1\n';
+      for (let k = 0; k < l.pts.length; k += 2) d += `0\nVERTEX\n8\nCONTORNI\n10\n${(l.pts[k] - x0).toFixed(3)}\n20\n${(l.pts[k+1] - y0).toFixed(3)}\n`;
+      d += '0\nSEQEND\n';
+    }
+    for (const mk of marks) {
+      const cx = mk.x - x0, cy = mk.y - y0, ly = mk.kind === 'vite' ? 'FORI_VITI' : 'FORI_CAVO';
+      d += `0\nCIRCLE\n8\n${ly}\n10\n${cx.toFixed(3)}\n20\n${cy.toFixed(3)}\n40\n${(mk.d/2).toFixed(3)}\n`;
+      d += `0\nLINE\n8\nCROCI\n10\n${(cx - 8).toFixed(3)}\n20\n${cy.toFixed(3)}\n11\n${(cx + 8).toFixed(3)}\n21\n${cy.toFixed(3)}\n`;
+      d += `0\nLINE\n8\nCROCI\n10\n${cx.toFixed(3)}\n20\n${(cy - 8).toFixed(3)}\n11\n${cx.toFixed(3)}\n21\n${(cy + 8).toFixed(3)}\n`;
+    }
+    d += '0\nENDSEC\n0\nEOF\n';
+    download(new Blob([d], {type: 'application/dxf'}), bn + '_dima_foratura.dxf');
+    return;
+  }
+  let sv = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${W.toFixed(1)}mm" height="${H.toFixed(1)}mm" viewBox="0 0 ${W.toFixed(2)} ${H.toFixed(2)}" font-family="Arial, sans-serif">\n`;
+  sv += `<rect x="0.5" y="0.5" width="${(W - 1).toFixed(2)}" height="${(H - 1).toFixed(2)}" fill="none" stroke="#999" stroke-width="0.3" stroke-dasharray="3 2"/>\n`;
+  sv += `<g fill="none" stroke="#888" stroke-width="0.35">`;
+  for (const pc of MODEL.pieces) for (const l of pc.L0) { let p = ''; for (let k = 0; k < l.pts.length; k += 2) p += (k ? 'L' : 'M') + X(l.pts[k]).toFixed(2) + ' ' + Y(l.pts[k+1]).toFixed(2); sv += `<path d="${p}Z"/>`; }
+  sv += `</g>\n`;
+  // linea di livello
+  sv += `<line x1="${(m/2).toFixed(1)}" y1="${Y(y0).toFixed(2)}" x2="${(W - m/2).toFixed(1)}" y2="${Y(y0).toFixed(2)}" stroke="#2a7fff" stroke-width="0.4" stroke-dasharray="6 3"/>`;
+  sv += `<text x="${(m/2).toFixed(1)}" y="${(Y(y0) + 5).toFixed(2)}" font-size="3.2" fill="#2a7fff">linea di livello (base lettere) – usa la livella</text>\n`;
+  for (const mk of marks) {
+    const cx = X(mk.x), cy = Y(mk.y), col = mk.kind === 'vite' ? '#e00' : '#0a0', dash = mk.kind === 'vite' ? '' : ' stroke-dasharray="1.5 1"';
+    sv += `<g stroke="${col}" stroke-width="0.35" fill="none"><circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${(mk.d/2).toFixed(2)}"${dash}/><line x1="${(cx - 10).toFixed(2)}" y1="${cy.toFixed(2)}" x2="${(cx + 10).toFixed(2)}" y2="${cy.toFixed(2)}"/><line x1="${cx.toFixed(2)}" y1="${(cy - 10).toFixed(2)}" x2="${cx.toFixed(2)}" y2="${(cy + 10).toFixed(2)}"/></g>`;
+    sv += `<text x="${(cx + 2).toFixed(2)}" y="${(cy - 2.5).toFixed(2)}" font-size="3" fill="${col}">${mk.t}</text>\n`;
+  }
+  const by = H - 14;
+  sv += `<g stroke="#000" stroke-width="0.4"><line x1="${m}" y1="${by}" x2="${m + 100}" y2="${by}"/><line x1="${m}" y1="${by - 2}" x2="${m}" y2="${by + 2}"/><line x1="${m + 100}" y1="${by - 2}" x2="${m + 100}" y2="${by + 2}"/></g>`;
+  sv += `<text x="${m}" y="${by + 6}" font-size="3.5">Controllo scala: questa linea deve misurare 100 mm</text>`;
+  sv += `<text x="${m + 110}" y="${by + 1}" font-size="4" font-weight="bold">${bn.replace(/_/g, ' ')} – dima di foratura 1:1 – vista dal davanti – ${(x1 - x0).toFixed(0)}×${(y1 - y0).toFixed(0)} mm</text>`;
+  sv += `<text x="${m + 110}" y="${by + 6}" font-size="3.2" fill="#e00">rosso = viti di fissaggio</text><text x="${m + 160}" y="${by + 6}" font-size="3.2" fill="#0a0">verde tratteggiato = foro passaggio cavo</text>\n</svg>`;
+  download(new Blob([sv], {type: 'image/svg+xml'}), bn + '_dima_foratura.svg');
+  msg('Dima esportata: stampala al 100% (o tagliala/marcala col laser su cartoncino)');
+}
+function doExport(kind) {
+  if (kind === 'dima' || kind === 'dimadxf') return exportDima(kind === 'dimadxf' ? 'dxf' : 'svg');
+  if (!MODEL) return msg('Niente da esportare');
+  const bn = baseName(), L = layoutForExport();
+  if (kind === '3mf') {
+    const objs = [...L.map(x => x.h), ...L.map(x => x.f), ...L.filter(x => x.l).map(x => x.l), ...tubesForExport()];
+    const blob = zipStore([
+      {name: '[Content_Types].xml', data: '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>'},
+      {name: '_rels/.rels', data: '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>'},
+      {name: '3D/3dmodel.model', data: model3MF(objs)}
+    ]);
+    blob.__type = 'model/3mf';
+    download(new Blob([blob], {type: 'model/3mf'}), bn + '.3mf');
+  } else if (kind === 'stlzip') {
+    const files = [];
+    for (const x of L) { files.push({name: x.h.name + '.stl', data: stlBinary([x.h])}); files.push({name: x.f.name + '.stl', data: stlBinary([Object.assign(Object.create(Mesh.prototype), x.f, {_dy: 0})])}); if (x.l) files.push({name: x.l.name + '.stl', data: stlBinary([Object.assign(Object.create(Mesh.prototype), x.l, {_dy: 0})])}); }
+    if (MODEL.tubes.length) files.push({name: 'Distanziale_x' + MODEL.tubes.length + '.stl', data: stlBinary([Object.assign(Object.create(Mesh.prototype), MODEL.tubes[0], {_dx: -MODEL.tubes[0].at.x, _dy: -MODEL.tubes[0].at.y})])});
+    download(zipStore(files), bn + '_STL.zip');
+  } else if (kind === 'stlhousing') download(new Blob([stlBinary([...L.map(x => x.h), ...L.filter(x => x.l).map(x => x.l)])], {type: 'model/stl'}), bn + '_scocche.stl');
+  else if (kind === 'stlface') download(new Blob([stlBinary(MODEL.pieces.flatMap(p => p.parts).map(q => q.face))], {type: 'model/stl'}), bn + '_facce.stl');
+  else if (kind === 'svg' || kind === 'dxf') {
+    const layers = [['Esterno', p => p.L0, '#000000'], ['Faccia', p => p.Lface, '#00a000'], ['Fori', p => p.Lholes, '#ff0000']];
+    const [x0, y0, x1, y1] = MODEL.bbox;
+    if (kind === 'svg') {
+      const m = 5, w = x1 - x0 + 2*m, h = y1 - y0 + 2*m;
+      let s = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${w.toFixed(2)}mm" height="${h.toFixed(2)}mm" viewBox="0 0 ${w.toFixed(3)} ${h.toFixed(3)}">\n`;
+      for (const [nm, get, col] of layers) {
+        s += `<g id="${nm}" fill="none" stroke="${col}" stroke-width="0.1">`;
+        for (const pc of MODEL.pieces) for (const l of get(pc)) {
+          const p = l.pts; let d = '';
+          for (let k = 0; k < p.length; k += 2) d += (k ? 'L' : 'M') + (p[k] - x0 + m).toFixed(3) + ' ' + (y1 - p[k+1] + m).toFixed(3);
+          s += `<path d="${d}Z"/>`;
+        }
+        s += '</g>\n';
+      }
+      download(new Blob([s + '</svg>'], {type: 'image/svg+xml'}), bn + '_contorni.svg');
+    } else {
+      let s = '0\nSECTION\n2\nENTITIES\n';
+      for (const [nm, get] of layers) for (const pc of MODEL.pieces) for (const l of get(pc)) {
+        s += `0\nPOLYLINE\n8\n${nm}\n66\n1\n70\n1\n`;
+        const p = l.pts;
+        for (let k = 0; k < p.length; k += 2) s += `0\nVERTEX\n8\n${nm}\n10\n${(p[k] - x0).toFixed(4)}\n20\n${(p[k+1] - y0).toFixed(4)}\n`;
+        s += '0\nSEQEND\n';
+      }
+      s += '0\nENDSEC\n0\nEOF\n';
+      download(new Blob([s], {type: 'application/dxf'}), bn + '_contorni.dxf');
+    }
+  }
+  msg('Esportato: ' + bn);
+}
+
+/* =====================================================================
+   UI
+   ===================================================================== */
+const $ = (id) => document.getElementById(id);
+function msg(t) { $('stMsg').textContent = t; }
+function saveLocal() { try { localStorage.setItem('cled_params', JSON.stringify({P, holes: manualHoles})); } catch (e) {} }
+function fillFonts() {
+  const sel = $('p_font'), cur = P.font;
+  const names = [...new Set([...customFonts.map(f => f.name), ...WIN_FONTS, ...sysFonts, cur])];
+  sel.innerHTML = '';
+  for (const n of names) { const o = document.createElement('option'); o.value = n; o.textContent = n; o.style.fontFamily = `"${n}"`; sel.appendChild(o); }
+  sel.value = cur;
+}
+function syncUI() {
+  for (const k of Object.keys(DEFAULTS)) {
+    const el = $('p_' + k); if (!el) continue;
+    if (el.type === 'checkbox') el.checked = !!P[k]; else el.value = P[k];
+  }
+  for (const [segId, key] of [['segSrc', 'src'], ['segMode', 'mode'], ['segStyle', 'style'], ['segLight', 'light']])
+    $(segId).querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === P[key]));
+  $('srcText').classList.toggle('hidden', P.src !== 'text');
+  $('srcImg').classList.toggle('hidden', P.src !== 'image');
+  $('rowFuse').classList.toggle('hidden', P.mode !== 'merge');
+  $('overlapOpts').classList.toggle('hidden', P.mode !== 'overlap');
+  $('blockOpts').classList.toggle('hidden', P.mode !== 'block');
+  $('rowBaseCut').classList.toggle('hidden', !P.flatBase || P.mode === 'block');
+  $('segLight').querySelectorAll('button').forEach(b => { b.disabled = P.mode === 'block' && b.dataset.v !== 'front'; b.style.opacity = b.disabled ? .35 : 1; });
+  document.querySelectorAll('#segStyle button').forEach(b => { b.disabled = P.mode === 'block' && b.dataset.v === 'neon'; b.style.opacity = b.disabled ? .35 : 1; });
+  $('p_step').disabled = P.mode === 'block';
+  $('neonOpts').classList.toggle('hidden', P.style !== 'neon');
+  $('stepOpts').classList.toggle('hidden', !P.step);
+  $('rowGap').classList.toggle('hidden', !P.step);
+  $('p_ledW').disabled = P.led !== 'custom';
+  $('p_bedX').disabled = $('p_bedY').disabled = P.bed !== 'custom';
+  $('stepHint').textContent = P.step ? 'La faccia trasparente si appoggia sullo scalino dentro la parete.' : 'Senza scalino la faccia è un coperchio grande quanto la lettera, da incollare sopra le pareti.';
+  $('lightHint').textContent = {
+    front: 'Luce dalla faccia: scocca opaca (fondo dietro), faccia in PLA trasparente davanti. Foro cavo sul fondo.',
+    back: 'Effetto alone sul muro: il fondo diventa il fronte opaco, il pannello in PLA trasparente va dietro (verso il muro) e il foro cavo è sul pannello.',
+    both: 'Fronte e retro: stampa la scocca con il fondo in PLA trasparente (sottile), pannello trasparente dietro con il foro cavo.'
+  }[P.light];
+  const mm = mountMode();
+  $('rowHead').classList.toggle('hidden', mm !== 'keyhole');
+  $('standOpts').classList.toggle('hidden', mm !== 'screws');
+  $('mountHint').textContent = {
+    keyhole: 'Asole a goccia sul retro con rinforzo: fissi le viti al muro con la dima, lasciandole sporgere circa 8 mm, appoggi la lettera e la fai scendere. La lettera resta a filo muro.',
+    screws: P.light === 'front' ? 'La vite passa dal fondo della lettera (prima di montare la faccia). Con i distanziali la lettera resta staccata dal muro.' : 'Con l\'alone le viti passano dal pannello posteriore e i distanziali tengono la lettera staccata dal muro per far uscire la luce.',
+    none: 'Nessun foro di fissaggio (per incollare o appoggiare).'
+  }[mm] + (P.mount === 'keyhole' && mm !== 'keyhole' ? ' (Con luce retro le asole non servono: uso viti + distanziali.)' : '');
+  $('imgName').textContent = imgName ? 'File: ' + imgName : 'Nessun file. Va bene un logo esportato da Illustrator.';
+}
+function bindUI() {
+  for (const k of Object.keys(DEFAULTS)) {
+    const el = $('p_' + k); if (!el) continue;
+    const ev = (el.tagName === 'TEXTAREA' || el.type === 'number') ? 'input' : 'change';
+    el.addEventListener(ev, () => {
+      let v = el.type === 'checkbox' ? el.checked : el.value;
+      if (el.type === 'number') { v = parseFloat(String(v).replace(',', '.')); if (!isFinite(v)) return; }
+      P[k] = v;
+      if (k === 'led' && LEDW[v]) { P.ledW = LEDW[v]; if (P.style === 'neon') P.neonW = LEDW[v] + 1; }
+      if (k === 'bed' && BEDS[v]) { P.bedX = BEDS[v][0]; P.bedY = BEDS[v][1]; }
+      syncUI(); saveLocal(); drawSect(); schedule();
+    });
+  }
+  for (const [segId, key] of [['segSrc', 'src'], ['segMode', 'mode'], ['segStyle', 'style'], ['segLight', 'light']])
+    $(segId).addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; P[key] = b.dataset.v;
+      if (key === 'style' && P.style === 'neon') P.neonW = +P.ledW + 1;
+      if (key === 'mode') {
+        if (P.mode === 'overlap' && !(+P.outline > 0)) P.outline = 4;
+        if (P.mode === 'merge' && !(+P.outline > 0)) P.outline = 3;
+        if (P.mode === 'block') { P.light = 'front'; if (P.style === 'neon') P.style = 'classic'; }
+        V2.fitted = false;
+      }
+      syncUI(); saveLocal(); drawSect(); schedule(); });
+  document.querySelectorAll('#tabs .tab').forEach(t => t.addEventListener('click', () => setTab(t.dataset.t)));
+  $('tAdd').onclick = () => { V2.tool = V2.tool === 'add' ? null : 'add'; $('tAdd').classList.toggle('on', V2.tool === 'add'); $('tDel').classList.remove('on'); cPlan.style.cursor = V2.tool ? 'crosshair' : ''; };
+  $('tDel').onclick = () => { V2.tool = V2.tool === 'del' ? null : 'del'; $('tDel').classList.toggle('on', V2.tool === 'del'); $('tAdd').classList.remove('on'); cPlan.style.cursor = V2.tool ? 'crosshair' : ''; };
+  $('tFit').onclick = () => { fit2D(); draw2D(); };
+  $('tFit3').onclick = () => { fit3D(); draw3D(); };
+  $('vFront').onclick = () => setView('front');
+  $('vBack').onclick = () => setView('back');
+  $('vIso').onclick = () => setView('iso');
+  $('tLit').onclick = () => { GL.lit = !GL.lit; $('tLit').classList.toggle('on', GL.lit); if (GL.lit && !GL.showWall) { GL.showWall = true; $('tWall').classList.add('on'); } draw3D(); };
+  $('tWall').onclick = () => { GL.showWall = !GL.showWall; $('tWall').classList.toggle('on', GL.showWall); draw3D(); };
+  $('litCol').onchange = () => draw3D();
+  $('tExplode').onclick = () => { GL.explode = !GL.explode; $('tExplode').classList.toggle('on', GL.explode); upload3D(); draw3D(); };
+  $('tFace').onclick = () => { GL.showFace = !GL.showFace; $('tFace').classList.toggle('on', GL.showFace); draw3D(); };
+  $('bDima').onclick = () => exportDima();
+  $('bClearHoles').onclick = () => { manualHoles = []; saveLocal(); schedule(true); };
+  $('bCalc').onclick = () => schedule(true);
+  $('bExp').onclick = (e) => { e.stopPropagation(); const m = $('menuExp'); m.style.display = m.style.display === 'block' ? 'none' : 'block'; };
+  document.addEventListener('click', () => $('menuExp').style.display = 'none');
+  $('menuExp').addEventListener('click', e => { const b = e.target.closest('[data-exp]'); if (b) doExport(b.dataset.exp); });
+  // font
+  $('bFontFile').onclick = () => $('fFont').click();
+  $('fFont').onchange = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const buf = await f.arrayBuffer();
+    const name = f.name.replace(/\.[^.]+$/, '');
+    try { await registerFont(name, buf); customFonts.push({name, b64: abToB64(buf)}); P.font = name; fillFonts(); syncUI(); schedule(true); msg('Font caricato: ' + name); }
+    catch (err) { msg('Font non valido'); }
+    e.target.value = '';
+  };
+  $('bFontSys').onclick = async () => {
+    if (!window.queryLocalFonts) { msg('Elenco font installati non disponibile in questo browser: usa Edge/Chrome o “Carica .ttf/.otf”.'); return; }
+    try { const fs = await window.queryLocalFonts(); sysFonts = [...new Set(fs.map(f => f.family))].sort(); fillFonts(); msg(sysFonts.length + ' font installati trovati'); }
+    catch (err) { msg('Permesso ai font negato'); }
+  };
+  // immagine
+  $('bImg').onclick = () => $('fImg').click();
+  $('fImg').onchange = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    await loadImageFile(f); e.target.value = '';
+  };
+  // progetto
+  $('bNew').onclick = () => { if (!confirm('Nuovo progetto? Le impostazioni tornano ai valori iniziali.')) return; P = Object.assign({}, DEFAULTS); manualHoles = []; imgEl = null; imgData = null; imgName = ''; syncUI(); fillFonts(); V2.fitted = false; saveLocal(); schedule(true); };
+  $('bSave').onclick = () => {
+    const proj = {app: 'Colors LED Studio', version: 1, P, holes: manualHoles, fonts: customFonts.filter(f => f.name === P.font), image: imgData ? {name: imgName, data: imgData} : null};
+    download(new Blob([JSON.stringify(proj)], {type: 'application/json'}), baseName() + '.cled.json');
+  };
+  $('bOpen').onclick = () => $('fProj').click();
+  $('fProj').onchange = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const j = JSON.parse(await f.text());
+      P = Object.assign({}, DEFAULTS, j.P || {}); manualHoles = j.holes || [];
+      for (const ft of (j.fonts || [])) { await registerFont(ft.name, b64ToAb(ft.b64)); if (!customFonts.find(x => x.name === ft.name)) customFonts.push(ft); }
+      if (j.image) { imgName = j.image.name; await setImage(j.image.data); }
+      fillFonts(); syncUI(); V2.fitted = false; saveLocal(); schedule(true); msg('Progetto aperto');
+    } catch (err) { msg('File progetto non valido'); }
+    e.target.value = '';
+  };
+  window.addEventListener('resize', () => { redrawActive(); });
+}
+function abToB64(buf) { let s = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); }
+function b64ToAb(b) { const s = atob(b), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u.buffer; }
+async function registerFont(name, buf) { const ff = new FontFace(name, buf); await ff.load(); document.fonts.add(ff); }
+async function loadImageFile(f) {
+  imgName = f.name;
+  if (/\.svg$/i.test(f.name) || f.type === 'image/svg+xml') {
+    let t = await f.text();
+    // se manca width/height uso il viewBox
+    t = t.replace(/<svg\b[^>]*>/i, (tag) => {
+      if (/\swidth\s*=/.test(tag) && /\sheight\s*=/.test(tag) && !/width\s*=\s*["']100%/.test(tag)) return tag;
+      const vb = tag.match(/viewBox\s*=\s*["']\s*([-\d.e]+)[\s,]+([-\d.e]+)[\s,]+([-\d.e]+)[\s,]+([-\d.e]+)/i);
+      if (!vb) return tag;
+      return tag.replace(/\s(width|height)\s*=\s*["'][^"']*["']/gi, '').replace(/<svg/i, `<svg width="${vb[3]}" height="${vb[4]}"`);
+    });
+    await setImage('data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(t))));
+  } else {
+    const r = new FileReader();
+    const d = await new Promise(ok => { r.onload = () => ok(r.result); r.readAsDataURL(f); });
+    await setImage(d);
+  }
+  P.src = 'image'; syncUI(); V2.fitted = false; saveLocal(); schedule(true);
+}
+function setImage(d) {
+  imgData = d;
+  return new Promise((ok, ko) => { const im = new Image(); im.onload = () => { imgEl = im; ok(); }; im.onerror = () => { msg('Immagine non leggibile'); ko(); }; im.src = d; });
+}
+let activeTab = 'plan';
+function setTab(t) {
+  activeTab = t;
+  document.querySelectorAll('#tabs .tab').forEach(x => x.classList.toggle('on', x.dataset.t === t));
+  $('cPlan').classList.toggle('on', t === 'plan'); $('cSect').classList.toggle('on', t === 'sect'); $('c3d').classList.toggle('on', t === '3d');
+  $('legPlan').classList.toggle('hidden', t !== 'plan');
+  $('tools2d').classList.toggle('hidden', t !== 'plan'); $('tools3d').classList.toggle('hidden', t !== '3d');
+  redrawActive();
+}
+function redrawActive() { if (activeTab === 'plan') { if (!V2.fitted) fit2D(); draw2D(); } else if (activeTab === 'sect') drawSect(); else draw3D(); }
+
+let timer = null, building = false, pending = false;
+function schedule(force) {
+  if (!P.auto && !force) { msg('Modifiche in attesa: premi Ricalcola'); return; }
+  clearTimeout(timer); timer = setTimeout(run, force ? 10 : 350);
+}
+async function run() {
+  if (building) { pending = true; return; }
+  building = true; $('busy').style.display = 'block';
+  await new Promise(r => setTimeout(r, 20));
+  try {
+    const old = MODEL ? MODEL.bbox : null;
+    MODEL = await buildModel();
+    const nb = MODEL.bbox, sz = (b) => Math.max(b[2] - b[0], b[3] - b[1]);
+    if (!old || !V2.fitted || Math.abs(sz(nb) / sz(old) - 1) > 0.3) { fit2D(); fit3D(); }
+    if (GL.lastLight !== P.light) { GL.lastLight = P.light; const fu = P.light === 'front'; GL.yaw = fu ? -1.25 : 1.25; GL.pitch = fu ? 0.85 : -0.85; }
+    upload3D(); renderInfo(); redrawActive();
+    const tris = MODEL.pieces.reduce((s, p) => s + p.parts.reduce((a, q) => a + (q.housing.t.length + q.face.t.length)/3, 0), 0);
+    $('stTime').textContent = `${MODEL.pieces.length} pezzi · ${(tris/1000).toFixed(0)}k triangoli · ${MODEL.ms.toFixed(0)} ms`;
+    msg(MODEL.warns.length ? MODEL.warns[0] : 'Pronto');
+  } catch (err) { console.error(err); msg('⚠ ' + err.message); }
+  building = false; $('busy').style.display = 'none';
+  if (pending) { pending = false; run(); }
+}
+window.LED = {GL, draw3D, buildModel: () => buildModel(), get MODEL() { return MODEL; }, P: () => P, setP: (o) => { Object.assign(P, o); fillFonts(); syncUI(); }, run, stlBinary, model3MF, zipStore, setTab};
+
+fillFonts(); syncUI(); bindUI(); setTab('plan'); schedule(true);
+// integrazione con il programma Windows (versione + aggiornamenti)
+if (window.cledApp) {
+  window.cledApp.info().then(i => { $('stVer').textContent = 'v' + i.version; });
+  $('bUpd').classList.remove('hidden');
+  $('bUpd').onclick = async () => {
+    msg('Controllo aggiornamenti…');
+    const r = await window.cledApp.checkUpdates();
+    if (!r.ok && r.reason === 'dev') msg('Gli aggiornamenti funzionano solo nel programma installato.');
+  };
+  window.cledApp.onUpdate(d => {
+    const b = $('bUpd');
+    if (d.state === 'available') { b.textContent = 'Nuova v' + d.version; b.classList.add('pri'); msg('Disponibile la versione ' + d.version); }
+    if (d.state === 'downloading') { b.textContent = 'Download ' + d.percent + '%'; }
+    if (d.state === 'ready') { b.textContent = 'Pronto: riavvia'; msg('Aggiornamento pronto: si installa alla chiusura.'); }
+    if (d.state === 'none') msg('Hai già l\'ultima versione.');
+  });
+}
+</script>
+</body>
+</html>

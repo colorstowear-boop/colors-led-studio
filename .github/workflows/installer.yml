@@ -45,6 +45,8 @@ jobs:
           git add package.json
           git commit -m "Versione $V" || echo "niente da salvare"
           git push || echo "push non necessario"
+          git tag -f "v$V"
+          git push -f origin "v$V"
 
       - name: Prepara icona
         shell: bash
